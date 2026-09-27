@@ -25,10 +25,13 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100vh;
+  min-height: 100svh;
   color: var(--text);
   background:
     radial-gradient(
@@ -98,13 +101,17 @@ h1 {
 .academy-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) 420px;
-  min-height: calc(100vh - 101px);
+  height: calc(100vh - 101px);
+  height: calc(100svh - 101px);
+  min-height: 0;
 }
 
 /* 4. 3D VIEWER */
 .viewer-panel {
   position: relative;
-  min-height: 620px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   border-right: 1px solid var(--border);
 }
 
@@ -138,8 +145,11 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
+  min-height: 0;
   padding: 18px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .card {
@@ -273,7 +283,8 @@ pre {
   }
 
   .viewer-panel {
-    min-height: 55vh;
+    height: 56svh;
+    min-height: 420px;
     border-right: 0;
     border-bottom: 1px solid var(--border);
   }
@@ -307,7 +318,8 @@ pre {
   }
 
   .viewer-panel {
-    min-height: 58vh;
+    height: 55svh;
+    min-height: 360px;
   }
 
   .lesson-panel {
@@ -338,7 +350,8 @@ pre {
   }
 
   .viewer-panel {
-    min-height: 52vh;
+    height: 52svh;
+    min-height: 320px;
   }
 
   .learning-chain {
