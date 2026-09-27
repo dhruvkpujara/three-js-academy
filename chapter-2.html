@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three.js Academy — Lesson 2</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="eyebrow">THREE.JS ACADEMY</div>
+      <h1>Lesson 2 — Transform Lab</h1>
+      <p>Position + Rotation + Scale</p>
+    </div>
+    <nav class="chapter-nav" aria-label="Chapter navigation">
+      <a class="chapter-link" href="./index.html">01 · First World</a>
+      <a class="chapter-link active" href="./chapter-2.html">02 · Transforms</a>
+    </nav>
+  </header>
+
+  <main class="academy-layout">
+    <section class="viewer-panel">
+      <div class="chapter-strip"><span>CHAPTER 02</span><span>Transform lab</span></div>
+      <div id="canvas-wrap"></div>
+      <div class="viewer-help"><span>🖱️ Drag</span><span>🔍 Scroll</span><span>↻ Orbit</span></div>
+    </section>
+
+    <aside class="lesson-panel">
+      <section class="card">
+        <div class="card-label">CONNECT</div>
+        <h2>Chapter 1 → Chapter 2</h2>
+        <p>You already built a scene, camera, renderer and mesh. Now we control where that mesh is, how it turns, and how big it becomes.</p>
+      </section>
+
+      <section class="card">
+        <div class="card-label">EXPERIMENT</div>
+        <h2>Transform the object</h2>
+        <p class="card-description">Try extreme values. Then bring everything back and combine all three transforms.</p>
+        <div class="controls">
+          <label class="control"><span>Position X <output id="posXValue">0.0</output></span><input id="posX" type="range" min="-3" max="3" value="0" step="0.1"></label>
+          <label class="control"><span>Position Y <output id="posYValue">0.0</output></span><input id="posY" type="range" min="-2" max="3" value="0" step="0.1"></label>
+          <label class="control"><span>Rotation X <output id="rotXValue">0.00</output></span><input id="rotX" type="range" min="0" max="6.283" value="0" step="0.01"></label>
+          <label class="control"><span>Rotation Y <output id="rotYValue">0.60</output></span><input id="rotY" type="range" min="0" max="6.283" value="0.6" step="0.01"></label>
+          <label class="control"><span>Scale <output id="scaleValue">1.0</output></span><input id="scale" type="range" min="0.4" max="2.5" value="1" step="0.1"></label>
+        </div>
+        <button id="resetBtn" class="button secondary">Reset experiment</button>
+        <button id="combineBtn" class="button primary">Combine the transforms</button>
+      </section>
+
+      <section class="card">
+        <div class="card-label">CONCEPT</div>
+        <h2>The three transform properties</h2>
+        <p><strong>position</strong> moves an object, <strong>rotation</strong> turns it, and <strong>scale</strong> changes its size. Every mesh has these properties.</p>
+        <pre><code>mesh.position.x = 2;
+
+mesh.rotation.y = Math.PI / 2;
+
+mesh.scale.setScalar(1.5);</code></pre>
+      </section>
+
+      <section class="card">
+        <div class="card-label">CHALLENGE</div>
+        <h2>Build your own transform</h2>
+        <p>Can you move the cube to the right, rotate it halfway around, and make it twice as large?</p>
+        <div class="learning-chain"><span>Scene</span><span>→</span><span>Mesh</span><span>→</span><span>Transform</span><span>→</span><span>Geometry</span></div>
+        <a href="./index.html" class="button secondary button-link">← Back to Chapter 1</a>
+      </section>
+    </aside>
+  </main>
+  <script type="module" src="./src/chapter2.js"></script>
+</body>
+</html>
