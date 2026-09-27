@@ -59,7 +59,8 @@ camera.position.set(4, 3, 6);
 
 const renderer =
   new THREE.WebGLRenderer({
-    antialias: true
+    antialias: true,
+    powerPreference: "high-performance"
   });
 
 renderer.setPixelRatio(
@@ -393,10 +394,10 @@ document
 
 function resizeRenderer() {
   const width =
-    canvasContainer.clientWidth;
+    Math.max(1, canvasContainer.clientWidth);
 
   const height =
-    canvasContainer.clientHeight;
+    Math.max(1, canvasContainer.clientHeight);
 
 
   renderer.setSize(
@@ -417,6 +418,13 @@ window.addEventListener(
   "resize",
   resizeRenderer
 );
+
+if ("ResizeObserver" in window) {
+  const observer =
+    new ResizeObserver(resizeRenderer);
+
+  observer.observe(canvasContainer);
+}
 
 resizeRenderer();
 
