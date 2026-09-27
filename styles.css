@@ -161,6 +161,7 @@ h1 {
 }
 
 .card {
+  flex: 0 0 auto;
   padding: 18px;
   background: linear-gradient(180deg, var(--panel-light), var(--panel));
   border: 1px solid var(--border);
