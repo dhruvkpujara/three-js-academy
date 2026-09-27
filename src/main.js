@@ -349,43 +349,8 @@ document
    13. COMBINED VIEW
    ============================================================ */
 
-let combinedView = false;
-
-document
-  .querySelector("#combineBtn")
-  .addEventListener(
-    "click",
-    event => {
-
-      combinedView =
-        !combinedView;
-
-
-      if (combinedView) {
-        cube.material.color.set(
-          0xa78bfa
-        );
-
-        cube.rotation.x = 0.35;
-        cube.rotation.z = -0.25;
-
-        event.currentTarget.textContent =
-          "Back to starter view";
-
-      } else {
-
-        cube.material.color.set(
-          0x7dd3fc
-        );
-
-        cube.rotation.x = 0;
-        cube.rotation.z = 0;
-
-        event.currentTarget.textContent =
-          "Try combined view";
-      }
-    }
-  );
+// Chapter 1 now hands off to Chapter 2 through page navigation.
+// Keep this file focused on the Lesson 1 experiment.
 
 
 /* ============================================================
