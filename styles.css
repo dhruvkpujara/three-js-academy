@@ -501,3 +501,19 @@ pre {
     grid-template-columns: 1fr;
   }
 }
+
+/* 15. SLIDER TO CODE */
+.slider-code-card .generated-code {
+  margin-top: 10px;
+  min-height: 78px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.slider-code-card .button {
+  margin-top: 10px;
+}
+
+#copyStatus {
+  margin-bottom: 0;
+}
