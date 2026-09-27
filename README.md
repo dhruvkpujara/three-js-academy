@@ -17,6 +17,7 @@ Each chapter is an independent HTML page, so a chapter can be opened directly by
 
 - Chapter 1: `index.html` — Your First 3D World
 - Chapter 2: `chapter-2.html` — Transform Lab
+- Chapter 3: `chapter-3.html` — Geometry Lab
 
 ## Roadmap
 
