@@ -365,3 +365,84 @@ pre {
     font-size: 11px;
   }
 }
+/* 13. LIVE CODE EDITOR */
+.live-editor-card {
+  overflow: hidden;
+}
+
+.code-editor {
+  display: block;
+  width: 100%;
+  min-height: 170px;
+  padding: 14px;
+  resize: vertical;
+  color: #dbeafe;
+  background: #060912;
+  border: 1px solid #293650;
+  border-radius: 11px;
+  outline: none;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+.code-editor:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px #7dd3fc22;
+}
+
+.editor-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.editor-actions .button {
+  margin-top: 0;
+}
+
+.code-status {
+  margin-top: 9px;
+  padding: 9px 10px;
+  color: #9fb0c9;
+  background: #0a1020;
+  border: 1px solid #1e2a40;
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.code-status.success {
+  color: #b8f7d0;
+  border-color: #27543b;
+  background: #0b1912;
+}
+
+.code-status.error {
+  color: #ffc2c2;
+  border-color: #633434;
+  background: #1a0d0d;
+}
+
+.editor-tip {
+  margin-top: 9px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.editor-tip code {
+  color: var(--accent);
+}
+
+@media (max-width: 600px) {
+  .code-editor {
+    min-height: 150px;
+    font-size: 11px;
+  }
+
+  .editor-actions {
+    grid-template-columns: 1fr;
+  }
+}
