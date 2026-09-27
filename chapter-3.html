@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three.js Academy — Lesson 3</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="eyebrow">THREE.JS ACADEMY</div>
+      <h1>Lesson 3 — Geometry Lab</h1>
+      <p>Shape + Size + Detail</p>
+    </div>
+    <nav class="chapter-nav" aria-label="Chapter navigation">
+      <a class="chapter-link" href="./index.html">01 · First World</a>
+      <a class="chapter-link" href="./chapter-2.html">02 · Transforms</a>
+      <a class="chapter-link active" href="./chapter-3.html">03 · Geometry</a>
+    </nav>
+  </header>
+
+  <main class="academy-layout">
+    <section class="viewer-panel">
+      <div class="chapter-strip"><span>CHAPTER 03</span><span>Geometry lab</span></div>
+      <div id="canvas-wrap"></div>
+      <div class="viewer-help"><span>🖱️ Drag</span><span>🔍 Scroll</span><span>↻ Orbit</span></div>
+    </section>
+
+    <aside class="lesson-panel">
+      <section class="card">
+        <div class="card-label">CONNECT</div>
+        <h2>From transforms to geometry</h2>
+        <p>A mesh is still Geometry + Material. Chapter 2 changed the mesh transform. Now we change the actual shape that the mesh is built from.</p>
+      </section>
+
+      <section class="card">
+        <div class="card-label">GEOMETRY SWITCHER</div>
+        <h2>Choose a shape</h2>
+        <p class="card-description">Each button creates a different Three.js geometry.</p>
+        <div class="shape-grid">
+          <button class="shape-button active" data-shape="box">Cube</button>
+          <button class="shape-button" data-shape="sphere">Sphere</button>
+          <button class="shape-button" data-shape="cone">Cone</button>
+          <button class="shape-button" data-shape="cylinder">Cylinder</button>
+          <button class="shape-button" data-shape="torus">Torus</button>
+          <button class="shape-button" data-shape="knot">Knot</button>
+        </div>
+
+        <label class="control">
+          <span>Detail <output id="detailValue">24</output></span>
+          <input id="detail" type="range" min="6" max="48" value="24" step="1">
+        </label>
+        <button id="resetBtn" class="button secondary">Reset geometry</button>
+      </section>
+
+      <section class="card live-editor-card">
+        <div class="card-label">LIVE CODE EDITOR</div>
+        <h2>Build geometry with code</h2>
+        <p class="card-description">Edit the geometry line, then run it and watch the 3D object change.</p>
+
+        <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Live JavaScript editor">cube.geometry.dispose();
+cube.geometry = new THREE.TorusKnotGeometry(1.2, 0.38, 96, 16);</textarea>
+
+        <div class="editor-actions">
+          <button id="runCodeBtn" class="button primary">▶ Run Code</button>
+          <button id="resetCodeBtn" class="button secondary">↩ Reset Code</button>
+        </div>
+
+        <div id="codeStatus" class="code-status" role="status">Ready — try changing the geometry.</div>
+
+        <div class="editor-tip">
+          <strong>Try:</strong> <code>new THREE.SphereGeometry(1.5, 32, 16)</code>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-label">CONCEPT</div>
+        <h2>Geometry is the shape</h2>
+        <p>Geometry describes the vertices, faces and dimensions that make up a 3D object. The material controls how that geometry looks.</p>
+        <pre><code>const geometry =
+  new THREE.SphereGeometry(
+    1.5, 32, 16
+  );
+
+const mesh =
+  new THREE.Mesh(
+    geometry,
+    material
+  );</code></pre>
+      </section>
+
+      <section class="card">
+        <div class="card-label">CHALLENGE</div>
+        <h2>Shape scientist</h2>
+        <p>Switch between shapes, then use the editor to create a geometry that isn't one of the buttons.</p>
+        <div class="learning-chain"><span>Scene</span><span>→</span><span>Mesh</span><span>→</span><span>Transform</span><span>→</span><span>Geometry</span></div>
+        <div class="chapter-nav-footer">
+          <a href="./chapter-2.html" class="button secondary button-link">← Chapter 2</a>
+          <span class="button secondary button-link">Chapter 4 coming next</span>
+        </div>
+      </section>
+    </aside>
+  </main>
+  <script type="module" src="./src/chapter3.js"></script>
+</body>
+</html>
