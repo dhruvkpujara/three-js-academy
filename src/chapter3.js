@@ -84,7 +84,10 @@ function selectShape(shape) {
 }
 
 shapeButtons.forEach(button => {
-  button.addEventListener("click", () => selectShape(button.dataset.shape));
+  button.addEventListener("click", () => {
+    selectShape(button.dataset.shape);
+    updateGeneratedCode();
+  });
 });
 
 detail.addEventListener("input", () => {
@@ -92,6 +95,7 @@ detail.addEventListener("input", () => {
   if (currentShape !== "box") {
     setGeometry(shapeFactories[currentShape](Number(detail.value)));
   }
+  updateGeneratedCode();
 });
 
 document.querySelector("#resetBtn").addEventListener("click", () => {
@@ -164,6 +168,7 @@ function resizeRenderer() {
 window.addEventListener("resize", resizeRenderer);
 if ("ResizeObserver" in window) new ResizeObserver(resizeRenderer).observe(canvasContainer);
 resizeRenderer();
+updateGeneratedCode();
 
 function animate() {
   requestAnimationFrame(animate);
