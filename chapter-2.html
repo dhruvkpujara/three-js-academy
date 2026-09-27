@@ -51,6 +51,27 @@
         <button id="combineBtn" class="button primary">Combine the transforms</button>
       </section>
 
+<section class="card live-editor-card">
+        <div class="card-label">LIVE CODE EDITOR</div>
+        <h2>Change the 3D world with code</h2>
+        <p class="card-description">Edit the JavaScript below, then press Run Code. Your code controls the cube in the live scene.</p>
+
+        <textarea id="codeEditor" class="code-editor" spellcheck="false" aria-label="Live JavaScript editor">cube.position.x = 2;
+cube.rotation.y = Math.PI / 2;
+cube.scale.setScalar(1.5);</textarea>
+
+        <div class="editor-actions">
+          <button id="runCodeBtn" class="button primary">▶ Run Code</button>
+          <button id="resetCodeBtn" class="button secondary">↩ Reset Code</button>
+        </div>
+
+        <div id="codeStatus" class="code-status" role="status">Ready — edit the code and run it.</div>
+
+        <div class="editor-tip">
+          <strong>Try:</strong> <code>cube.rotation.x = Math.PI;</code>
+        </div>
+      </section>
+
       <section class="card">
         <div class="card-label">CONCEPT</div>
         <h2>The three transform properties</h2>
