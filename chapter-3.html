@@ -57,7 +57,18 @@
         <button id="resetBtn" class="button secondary">Reset geometry</button>
       </section>
 
-      <section class="card live-editor-card">
+<section class="card slider-code-card">
+        <div class="card-label">SLIDER → CODE</div>
+        <h2>Copy what you just learned</h2>
+        <p class="card-description">Move the slider or choose a shape. The code below updates automatically. Copy it and paste it into the Live Code Editor.</p>
+
+        <pre class="generated-code"><code id="generatedCode">cube.geometry = new THREE.BoxGeometry(2, 2, 2);</code></pre>
+
+        <button id="copyGeneratedCode" class="button secondary">📋 Copy Code</button>
+        <div id="copyStatus" class="code-status" role="status">Change the controls above to generate new code.</div>
+      </section>
+
+            <section class="card live-editor-card">
         <div class="card-label">LIVE CODE EDITOR</div>
         <h2>Build geometry with code</h2>
         <p class="card-description">Edit the geometry line, then run it and watch the 3D object change.</p>
