@@ -120,3 +120,71 @@ function animate() {
   renderer.render(scene,camera);
 }
 animate();
+// ============================================================
+// LIVE CODE EDITOR
+// ============================================================
+
+const codeEditor = document.querySelector("#codeEditor");
+const runCodeBtn = document.querySelector("#runCodeBtn");
+const resetCodeBtn = document.querySelector("#resetCodeBtn");
+const codeStatus = document.querySelector("#codeStatus");
+
+const starterCode = codeEditor.value;
+
+function showCodeStatus(message, type = "") {
+  codeStatus.textContent = message;
+  codeStatus.className = "code-status" + (type ? " " + type : "");
+}
+
+runCodeBtn.addEventListener("click", () => {
+  try {
+    // The editor receives only the objects needed for this lesson.
+    // It is intentionally not given access to the page or browser APIs.
+    const runUserCode = new Function(
+      "cube",
+      "THREE",
+      "scene",
+      `"use strict";
+${codeEditor.value}`
+    );
+
+    runUserCode(cube, THREE, scene);
+    cube.updateMatrixWorld(true);
+    syncSliders();
+
+    combined = false;
+    document.querySelector("#combineBtn").textContent =
+      "Combine the transforms";
+
+    showCodeStatus("✓ Code ran successfully. Look at the 3D scene!", "success");
+  } catch (error) {
+    showCodeStatus("✕ " + error.message, "error");
+  }
+});
+
+resetCodeBtn.addEventListener("click", () => {
+  codeEditor.value = starterCode;
+  showCodeStatus("Editor restored. Press Run Code to apply it.");
+});
+
+codeEditor.addEventListener("keydown", event => {
+  if (event.key === "Tab") {
+    event.preventDefault();
+
+    const start = codeEditor.selectionStart;
+    const end = codeEditor.selectionEnd;
+
+    codeEditor.value =
+      codeEditor.value.slice(0, start) +
+      "  " +
+      codeEditor.value.slice(end);
+
+    codeEditor.selectionStart = start + 2;
+    codeEditor.selectionEnd = start + 2;
+  }
+
+  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+    event.preventDefault();
+    runCodeBtn.click();
+  }
+});
