@@ -11,6 +11,13 @@ Each lesson aims to have:
 - a tiny code surface
 - a clear "combine with what I learned before" section
 
+## Chapter system
+
+Each chapter is an independent HTML page, so a chapter can be opened directly by URL while the navigation connects the whole course.
+
+- Chapter 1: `index.html` — Your First 3D World
+- Chapter 2: `chapter-2.html` — Transform Lab
+
 ## Roadmap
 
 1. Scene, camera, renderer, mesh
