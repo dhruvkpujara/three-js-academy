@@ -1,60 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Three.js Academy — Lesson 1</title>
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
-  <header class="topbar">
-    <div>
-      <div class="eyebrow">THREE.JS ACADEMY</div>
-      <h1>Lesson 1 — Your First 3D World</h1>
-      <p>Scene + Camera + Renderer + Mesh, with live controls.</p>
-    </div>
-    <div class="progress">1 / 1 <span>starter lesson</span></div>
-  </header>
-  <main class="layout">
-    <section class="stage-panel">
-      <div id="canvas-wrap"></div>
-      <div class="hint">Drag to orbit • Scroll to zoom • Reset anytime</div>
-    </section>
-    <aside class="lesson-panel">
-      <section class="card">
-        <div class="card-title">🧠 What you're learning</div>
-        <p>A Three.js scene is a small 3D world. We put objects inside it, point a camera at them, and ask the renderer to draw each frame.</p>
-      </section>
-      <section class="card controls">
-        <div class="card-title">🎚️ Experiment with the cube</div>
-        <label class="control"><span>Position X <output id="posXValue">0.0</output></span><input id="posX" type="range" min="-3" max="3" value="0" step="0.1"></label>
-        <label class="control"><span>Position Y <output id="posYValue">0.0</output></span><input id="posY" type="range" min="-2" max="2" value="0" step="0.1"></label>
-        <label class="control"><span>Position Z <output id="posZValue">0.0</output></span><input id="posZ" type="range" min="-2" max="2" value="0" step="0.1"></label>
-        <label class="control"><span>Rotation Y <output id="rotYValue">0.60</output></span><input id="rotY" type="range" min="0" max="6.283" value="0.6" step="0.01"></label>
-        <label class="control"><span>Scale <output id="scaleValue">1.0</output></span><input id="scale" type="range" min="0.4" max="2.5" value="1" step="0.1"></label>
-        <button id="resetBtn">Reset experiment</button>
-      </section>
-      <section class="card code-card">
-        <div class="card-title">💻 The important code</div>
-        <pre><code>const scene = new THREE.Scene();
+  <link rel="stylesheet" href="./styles.css">
 
-const camera = new THREE.PerspectiveCamera(...);
-
-const geometry = new THREE.BoxGeometry(...);
-const material = new THREE.MeshStandardMaterial(...);
-const cube = new THREE.Mesh(geometry, material);
-
-scene.add(cube);
-renderer.render(scene, camera);</code></pre>
-        <p class="tiny">This tiny example uses the same building blocks we'll reuse in larger projects.</p>
-      </section>
-      <section class="card next-card">
-        <div class="card-title">🔗 How this combines with old learning</div>
-        <p>These pieces never get thrown away. Later lessons will keep the scene and camera while adding lights, animation, interaction, models and physics.</p>
-        <button id="combineBtn">Show combined view</button>
-      </section>
-    </aside>
-  </main>
+  <!-- OrbitControls uses the module name "three". -->
   <script type="importmap">
     {
       "imports": {
@@ -62,6 +14,145 @@ renderer.render(scene, camera);</code></pre>
       }
     }
   </script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="eyebrow">THREE.JS ACADEMY</div>
+      <h1>Lesson 1 — Your First 3D World</h1>
+      <p>Scene + Camera + Renderer + Mesh</p>
+    </div>
+
+    <div class="progress">
+      <strong>Lesson 1</strong>
+      <span>Starter</span>
+    </div>
+  </header>
+
+  <main class="academy-layout">
+
+    <!-- 3D VIEW -->
+    <section class="viewer-panel">
+      <div id="canvas-wrap"></div>
+
+      <div class="viewer-help">
+        <span>🖱️ Drag</span>
+        <span>🔍 Scroll</span>
+        <span>↻ Orbit</span>
+      </div>
+    </section>
+
+    <!-- LESSON CONTENT -->
+    <aside class="lesson-panel">
+
+      <section class="card">
+        <div class="card-label">CONCEPT</div>
+        <h2>What is a 3D scene?</h2>
+        <p>
+          Think of a Three.js scene as a small 3D world.
+          We place objects inside it, choose a camera,
+          and use the renderer to draw the world.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="card-label">EXPERIMENT</div>
+        <h2>Move the cube</h2>
+        <p class="card-description">
+          Change one value at a time and watch what happens.
+        </p>
+
+        <div class="controls">
+
+          <label class="control">
+            <span>Position X <output id="posXValue">0.0</output></span>
+            <input id="posX" type="range" min="-3" max="3" value="0" step="0.1">
+          </label>
+
+          <label class="control">
+            <span>Position Y <output id="posYValue">0.0</output></span>
+            <input id="posY" type="range" min="-2" max="2" value="0" step="0.1">
+          </label>
+
+          <label class="control">
+            <span>Position Z <output id="posZValue">0.0</output></span>
+            <input id="posZ" type="range" min="-2" max="2" value="0" step="0.1">
+          </label>
+
+          <label class="control">
+            <span>Rotation Y <output id="rotYValue">0.60</output></span>
+            <input id="rotY" type="range" min="0" max="6.283" value="0.6" step="0.01">
+          </label>
+
+          <label class="control">
+            <span>Scale <output id="scaleValue">1.0</output></span>
+            <input id="scale" type="range" min="0.4" max="2.5" value="1" step="0.1">
+          </label>
+
+        </div>
+
+        <button id="resetBtn" class="button secondary">
+          Reset experiment
+        </button>
+      </section>
+
+      <section class="card">
+        <div class="card-label">CODE</div>
+        <h2>What the code is doing</h2>
+
+        <pre><code>const scene = new THREE.Scene();
+
+const camera =
+  new THREE.PerspectiveCamera(...);
+
+const geometry =
+  new THREE.BoxGeometry(...);
+
+const material =
+  new THREE.MeshStandardMaterial(...);
+
+const cube =
+  new THREE.Mesh(geometry, material);
+
+scene.add(cube);
+
+renderer.render(scene, camera);</code></pre>
+
+        <p class="small-note">
+          Don't memorize this yet. We'll understand every line
+          one concept at a time.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="card-label">CONNECT</div>
+        <h2>How this grows later</h2>
+
+        <p>
+          We won't throw this lesson away.
+          Future lessons will build on the same scene,
+          camera and renderer.
+        </p>
+
+        <div class="learning-chain">
+          <span>Scene</span>
+          <span>→</span>
+          <span>Camera</span>
+          <span>→</span>
+          <span>Mesh</span>
+          <span>→</span>
+          <span>Animation</span>
+        </div>
+
+        <button id="combineBtn" class="button primary">
+          Try combined view
+        </button>
+      </section>
+
+    </aside>
+  </main>
+
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
