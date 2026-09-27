@@ -108,6 +108,46 @@ document.querySelector("#resetBtn").addEventListener("click", () => {
   controls.reset();
 });
 
+// ============================================================
+// SLIDER → CODE
+// ============================================================
+
+const generatedCode = document.querySelector("#generatedCode");
+const copyGeneratedCode = document.querySelector("#copyGeneratedCode");
+const copyStatus = document.querySelector("#copyStatus");
+
+function getGeometryCode() {
+  const d = Number(detail.value);
+
+  const codeByShape = {
+    box: "cube.geometry = new THREE.BoxGeometry(2, 2, 2);",
+    sphere: `cube.geometry = new THREE.SphereGeometry(1.35, ${d}, ${Math.max(8, Math.floor(d / 2))});`,
+    cone: `cube.geometry = new THREE.ConeGeometry(1.35, 2.6, ${d});`,
+    cylinder: `cube.geometry = new THREE.CylinderGeometry(1.25, 1.25, 2.6, ${d});`,
+    torus: `cube.geometry = new THREE.TorusGeometry(1.2, 0.38, ${Math.max(6, Math.floor(d / 3))}, ${d});`,
+    knot: `cube.geometry = new THREE.TorusKnotGeometry(1.05, 0.32, ${Math.max(48, d * 3)}, ${Math.max(6, Math.floor(d / 3))});`
+  };
+
+  return codeByShape[currentShape];
+}
+
+function updateGeneratedCode() {
+  generatedCode.textContent = getGeometryCode();
+}
+
+copyGeneratedCode.addEventListener("click", async () => {
+  const code = getGeometryCode();
+
+  try {
+    await navigator.clipboard.writeText(code);
+    copyStatus.textContent = "✓ Copied! Paste it into the Live Code Editor.";
+    copyStatus.className = "code-status success";
+  } catch {
+    copyStatus.textContent = "Select the code above and copy it manually.";
+    copyStatus.className = "code-status";
+  }
+});
+
 const codeEditor = document.querySelector("#codeEditor");
 const runCodeBtn = document.querySelector("#runCodeBtn");
 const resetCodeBtn = document.querySelector("#resetCodeBtn");
