@@ -447,3 +447,57 @@ pre {
     grid-template-columns: 1fr;
   }
 }
+
+/* 14. GEOMETRY LAB */
+.shape-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 18px;
+}
+
+.shape-button {
+  padding: 10px 8px;
+  color: var(--text-soft);
+  background: #0d1525;
+  border: 1px solid #293650;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.shape-button:hover,
+.shape-button.active {
+  color: var(--text);
+  background: #1a2a43;
+  border-color: var(--accent);
+}
+
+.chapter-nav-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.chapter-nav-footer .button {
+  margin-top: 0;
+}
+
+.chapter-nav-footer .button.secondary:last-child {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+@media (max-width: 600px) {
+  .shape-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .chapter-nav-footer {
+    grid-template-columns: 1fr;
+  }
+}
