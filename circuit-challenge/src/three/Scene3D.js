@@ -47,11 +47,11 @@ export class Scene3D {
     this.scene.add(grid);
   }
 
-  update(store, boardSize) {
+  update(store, boardSize, simulation = null) {
     this.modelRoot.clear();
     const { width, height } = boardSize;
     for (const part of store.parts) {
-      const model = this.factory.create(part.type);
+      const model = this.factory.create(part.type, simulation?.components?.[part.id] || null, part);
       model.position.set((part.x / width - 0.5) * 8, 0, (part.y / height - 0.5) * 5);
       this.modelRoot.add(model);
     }
