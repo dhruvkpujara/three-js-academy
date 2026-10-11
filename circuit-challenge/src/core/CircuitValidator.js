@@ -100,6 +100,9 @@ export class CircuitValidator {
     if (!switchPart || lamps.length < 2) {
       return { ok: false, reason: "This level needs one switch and at least two lamps." };
     }
+    if (switchPart.closed === false) {
+      return { ok: false, reason: "Close the switch to complete this powered parallel-circuit challenge." };
+    }
     const batteryA = graph.find(battery.id + ":a");
     const batteryB = graph.find(battery.id + ":b");
     const switchA = graph.find(switchPart.id + ":a");
