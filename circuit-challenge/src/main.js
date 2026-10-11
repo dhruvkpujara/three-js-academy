@@ -1,6 +1,6 @@
 import { LEVELS } from "./config/levels.js";
 import { CircuitStore } from "./core/CircuitStore.js";
-import { CircuitValidator } from "./core/CircuitValidator.js";
+import { CircuitValidator } from "./core/CircuitValidator.js?v=20261011-3";
 import {
   createCircuitDocument,
   validateCircuitDocument,
