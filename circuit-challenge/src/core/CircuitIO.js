@@ -119,6 +119,13 @@ export function validateChallengeCollection(input) {
     }
     if (!total || total > MAX_PARTS) throw new Error("Each challenge must require 1–" + MAX_PARTS + " components.");
     if (!TOPOLOGIES.has(level.topology)) throw new Error("Challenge " + (index + 1) + " uses an unsupported validation rule.");
+    if (parts.Battery !== 1) throw new Error("Each custom challenge must require exactly one battery.");
+    if (level.topology === "parallel" && (!parts.Lamp || parts.Lamp < 1)) {
+      throw new Error("Parallel challenges must require at least one lamp.");
+    }
+    if (level.topology === "parallel-switched" && (parts.Switch !== 1 || !parts.Lamp || parts.Lamp < 2)) {
+      throw new Error("Switched-parallel challenges require one switch and at least two lamps.");
+    }
     const points = Number(level.points);
     if (!Number.isInteger(points) || points < 0 || points > 10000) throw new Error("Challenge points must be an integer from 0 to 10000.");
     const clean = { title, prompt, instructions, parts, points, topology: level.topology };
