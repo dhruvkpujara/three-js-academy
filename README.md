@@ -18,6 +18,11 @@ Each chapter is an independent HTML page, so a chapter can be opened directly by
 - Chapter 1: `index.html` — Your First 3D World
 - Chapter 2: `chapter-2.html` — Transform Lab
 - Chapter 3: `chapter-3.html` — Geometry Lab
+- Car AI Lab: `car-lab.html` — driving simulation, front/left/right distance sensors, heading delta, and JSON training-data export
+
+## Car AI Lab data workflow
+
+The independent `car-lab.html` page records labeled driving samples in `car-driving-dataset.json`. It is a simulation/data-collection tool, not a model-training runtime. Train a numeric control policy in a suitable training environment, export it to a supported format such as ONNX, and use Transformers.js for compatible in-browser inference.
 
 ## Roadmap
 
