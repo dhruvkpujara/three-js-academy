@@ -1,4 +1,7 @@
-/** Graph-based checks are isolated from DOM and rendering code. */
+/**
+ * Validates submitted answers without depending on the DOM or Three.js.
+ * Wires join terminal nodes; electrical components remain separate elements.
+ */
 export class CircuitValidator {
   validate(parts, wires, level) {
     const counts = countTypes(parts);
@@ -6,63 +9,97 @@ export class CircuitValidator {
       && parts.every(part => Object.hasOwn(level.parts, part.type));
 
     if (!countsMatch) {
-      return { ok: false, reason: "Component types or counts do not match this challenge." };
+      return { ok: false, reason: "Component count is incorrect. Match the required parts exactly." };
     }
-    if (!parts.length) return { ok: false, reason: "Add the required components first." };
+    if (!parts.length) return { ok: false, reason: "Add the required components before submitting." };
 
     const battery = parts.find(part => part.type === "Battery");
-    if (!battery) return { ok: false, reason: "Add a battery." };
+    if (!battery) return { ok: false, reason: "This challenge needs a battery." };
 
     const graph = buildTerminalGraph(parts, wires);
     if (!allPartsReachable(parts, wires)) {
-      return { ok: false, reason: "Some components are isolated. Connect every component into one network." };
+      return { ok: false, reason: "Some components are isolated. Connect every component into the same circuit." };
     }
 
-    const result = level.topology === "parallel"
-      ? this.validateParallel(parts, graph, battery)
-      : this.validateSeries(parts, wires, battery, level);
+    if (level.topology === "series") return this.validateSeries(parts, wires, graph, battery);
+    if (level.topology === "parallel-switched") return this.validateSwitchedParallel(parts, graph, battery);
+    return this.validateParallel(parts, graph, battery);
+  }
 
-    return result;
+  validateSeries(parts, wires, graph, battery) {
+    if (graph.find(battery.id + ":a") === graph.find(battery.id + ":b")) {
+      return { ok: false, reason: "The battery terminals are shorted together. Build a loop through the components instead." };
+    }
+
+    // In a simple series loop, each component has exactly one wire on each terminal.
+    const terminalUse = countTerminalConnections(parts, wires);
+    const everyTerminalUsedOnce = parts.every(part =>
+      terminalUse.get(part.id + ":a") === 1 && terminalUse.get(part.id + ":b") === 1
+    );
+
+    if (!everyTerminalUsedOnce || wires.length !== parts.length) {
+      return {
+        ok: false,
+        reason: "The series loop is incomplete or has a branch. Connect one wire to each terminal of every component, making one continuous loop."
+      };
+    }
+
+    return { ok: true, reason: "Correct: every component is in one closed series loop." };
   }
 
   validateParallel(parts, graph, battery) {
     const batteryA = graph.find(battery.id + ":a");
     const batteryB = graph.find(battery.id + ":b");
-    const lamps = parts.filter(part => part.type === "Lamp");
+    if (batteryA === batteryB) {
+      return { ok: false, reason: "The battery is shorted. Keep its positive and negative supply nodes separate." };
+    }
 
-    const lampsAcrossSupply = lamps.every(lamp => {
+    const lamps = parts.filter(part => part.type === "Lamp");
+    const lampsShareTwoNodes = lamps.every(lamp => {
       const a = graph.find(lamp.id + ":a");
       const b = graph.find(lamp.id + ":b");
       return (a === batteryA && b === batteryB) || (a === batteryB && b === batteryA);
     });
 
-    return lampsAcrossSupply
-      ? { ok: true, reason: "Parallel branches are connected across the supply nodes." }
-      : { ok: false, reason: "Each lamp must connect across the same two battery nodes on its own branch." };
+    return lampsShareTwoNodes
+      ? { ok: true, reason: "Correct: each lamp is connected across the same two battery nodes." }
+      : { ok: false, reason: "Not parallel yet. Connect every lamp across the same two battery nodes, with separate branches." };
   }
 
-  validateSeries(parts, wires, battery, level) {
-    if (wires.length < parts.length) {
-      return { ok: false, reason: "Finish the closed loop and connect the circuit back to the battery." };
+  validateSwitchedParallel(parts, graph, battery) {
+    const switchPart = parts.find(part => part.type === "Switch");
+    const lamps = parts.filter(part => part.type === "Lamp");
+    if (!switchPart || lamps.length < 2) {
+      return { ok: false, reason: "This level needs one switch and at least two lamps." };
     }
 
-    // Each component must participate in the single connected path. A shorted
-    // battery is never accepted as a valid series circuit.
-    const graph = buildTerminalGraph(parts, wires);
-    if (graph.find(battery.id + ":a") === graph.find(battery.id + ":b")) {
-      return { ok: false, reason: "The battery terminals are shorted together. Rewire the series path." };
-    }
+    const batteryA = graph.find(battery.id + ":a");
+    const batteryB = graph.find(battery.id + ":b");
+    const switchA = graph.find(switchPart.id + ":a");
+    const switchB = graph.find(switchPart.id + ":b");
+    const lampNodes = lamps.map(lamp => [
+      graph.find(lamp.id + ":a"),
+      graph.find(lamp.id + ":b")
+    ]);
 
-    const degree = new Map(parts.map(part => [part.id, 0]));
-    for (const wire of wires) {
-      degree.set(wire.a.id, (degree.get(wire.a.id) || 0) + 1);
-      degree.set(wire.b.id, (degree.get(wire.b.id) || 0) + 1);
-    }
-    if (parts.some(part => degree.get(part.id) < 2)) {
-      return { ok: false, reason: "The series loop is incomplete. Each component needs both ends connected." };
-    }
+    const firstRail = lampNodes[0][0];
+    const secondRail = lampNodes[0][1];
+    const lampsShareRails = firstRail !== secondRail && lampNodes.every(([a, b]) =>
+      (a === firstRail && b === secondRail) || (a === secondRail && b === firstRail)
+    );
+    const switchConnectsSupplyToRail =
+      (switchA === batteryA && switchB === firstRail && batteryB === secondRail) ||
+      (switchB === batteryA && switchA === firstRail && batteryB === secondRail) ||
+      (switchA === batteryB && switchB === firstRail && batteryA === secondRail) ||
+      (switchB === batteryB && switchA === firstRail && batteryA === secondRail);
 
-    return { ok: true, reason: "Closed series loop detected." };
+    if (!lampsShareRails) {
+      return { ok: false, reason: "Put each lamp on its own parallel branch between the same two rails." };
+    }
+    if (!switchConnectsSupplyToRail) {
+      return { ok: false, reason: "Place the switch in the shared supply path: one terminal to a battery terminal, the other to the lamp rail. The other rail returns to the opposite battery terminal." };
+    }
+    return { ok: true, reason: "Correct: the switch is in the shared supply path and the lamps are in parallel." };
   }
 }
 
@@ -73,6 +110,21 @@ function countTypes(parts) {
   }, {});
 }
 
+function countTerminalConnections(parts, wires) {
+  const counts = new Map();
+  for (const part of parts) {
+    counts.set(part.id + ":a", 0);
+    counts.set(part.id + ":b", 0);
+  }
+  for (const wire of wires) {
+    const a = wire.a.id + ":" + wire.a.side;
+    const b = wire.b.id + ":" + wire.b.side;
+    counts.set(a, (counts.get(a) || 0) + 1);
+    counts.set(b, (counts.get(b) || 0) + 1);
+  }
+  return counts;
+}
+
 function buildTerminalGraph(parts, wires) {
   const parent = new Map();
   for (const part of parts) {
@@ -81,17 +133,21 @@ function buildTerminalGraph(parts, wires) {
   }
   const find = value => {
     const current = parent.get(value);
+    if (current === undefined) return null;
     if (current === value) return value;
     const root = find(current);
     parent.set(value, root);
     return root;
   };
-  const union = (left, right) => {
+  for (const wire of wires) {
+    const left = wire.a.id + ":" + wire.a.side;
+    const right = wire.b.id + ":" + wire.b.side;
     const rootLeft = find(left);
     const rootRight = find(right);
-    if (rootLeft !== rootRight) parent.set(rootRight, rootLeft);
-  };
-  for (const wire of wires) union(wire.a.id + ":" + wire.a.side, wire.b.id + ":" + wire.b.side);
+    if (rootLeft !== null && rootRight !== null && rootLeft !== rootRight) {
+      parent.set(rootRight, rootLeft);
+    }
+  }
   return { find };
 }
 
@@ -104,7 +160,7 @@ function allPartsReachable(parts, wires) {
     for (const wire of wires) {
       let next = null;
       if (wire.a.id === current) next = wire.b.id;
-      if (wire.b.id === current) next = wire.a.id;
+      else if (wire.b.id === current) next = wire.a.id;
       if (next !== null && !reached.has(next)) {
         reached.add(next);
         queue.push(next);
