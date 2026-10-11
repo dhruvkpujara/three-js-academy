@@ -54,7 +54,9 @@ function setMode(mode) {
 function loadLevel() {
   store.clear();
   $("prompt").textContent = currentLevel().prompt;
-  $("info").textContent = "Required: " + Object.entries(currentLevel().parts).map(([type, count]) => type + " ×" + count).join(" · ");
+  $("info").textContent = "Required: " + Object.entries(currentLevel().parts).map(([type, count]) => type + " ×" + count).join(" · ") + "\n" + currentLevel().instructions;
+  $("info").style.whiteSpace = "pre-line";
+  $("next").disabled = !awardedLevels.has(Number($("level").value));
   $("progress").textContent = "Level " + $("level").value + " of " + Object.keys(LEVELS).length;
   $("nodeReadout").textContent = "Network: not checked";
   setMode("select");
@@ -100,8 +102,10 @@ $("check").addEventListener("click", () => {
     awardedLevels.add(levelNumber);
     $("score").textContent = "Score: " + score;
     showStatus("Correct! Level " + levelNumber + " passed — +" + currentLevel().points + " points.");
+    $("next").disabled = false;
   } else {
     showStatus("Correct circuit! Points for this level were already awarded.");
+    $("next").disabled = false;
   }
 });
 $("next").addEventListener("click", () => {
