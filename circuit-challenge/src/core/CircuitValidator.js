@@ -36,6 +36,8 @@ export class CircuitValidator {
   }
 
   validateSimulation(parts, wires, level) {
+    const topology = verifyAdvancedTopology(parts, wires, level);
+    if (!topology.ok) return topology;
     const result = this.simulator.simulate(parts, wires);
     if (!result.ok) return { ok: false, reason: result.error, simulation: result };
     if (!Number.isFinite(result.equivalentResistance)) {
@@ -189,4 +191,130 @@ function allPartsReachable(parts, wires) {
     }
   }
   return reached.size === parts.length;
+}
+
+
+/**
+ * Exact node-pattern checks for the five advanced puzzles. Wires merge terminal
+ * nodes; components remain edges between those nodes. Resistance alone is not
+ * accepted as proof of the intended arrangement.
+ */
+function verifyAdvancedTopology(parts, wires, level) {
+  const parent = new Map();
+  for (const part of parts) {
+    parent.set(part.id + ":a", part.id + ":a");
+    parent.set(part.id + ":b", part.id + ":b");
+  }
+  const find = key => {
+    const root = parent.get(key);
+    if (root === key) return key;
+    const resolved = find(root);
+    parent.set(key, resolved);
+    return resolved;
+  };
+  for (const wire of wires) {
+    const a = wire.a.id + ":" + wire.a.side;
+    const b = wire.b.id + ":" + wire.b.side;
+    if (parent.has(a) && parent.has(b)) parent.set(find(b), find(a));
+  }
+  const node = part => [find(part.id + ":a"), find(part.id + ":b")];
+  const battery = parts.find(part => part.type === "Battery");
+  const [supplyA, supplyB] = node(battery);
+  if (supplyA === supplyB) return { ok: false, reason: "The battery terminals are shorted." };
+  const lamps = parts.filter(part => part.type === "Lamp");
+  const resistors = parts.filter(part => part.type === "Resistor");
+  const switches = parts.filter(part => part.type === "Switch");
+  const between = (part, a, b) => {
+    const [x, y] = node(part);
+    return (x === a && y === b) || (x === b && y === a);
+  };
+  const seriesPairBetweenRails = (pair, railA, railB) => {
+    const [a1, a2] = node(pair[0]);
+    const [b1, b2] = node(pair[1]);
+    return (
+      (a1 === railA && b2 === railB && a2 === b1 && a2 !== railA && a2 !== railB) ||
+      (a1 === railA && b1 === railB && a2 === b2 && a2 !== railA && a2 !== railB) ||
+      (a2 === railA && b1 === railB && a1 === b2 && a1 !== railA && a1 !== railB) ||
+      (a2 === railA && b2 === railB && a1 === b1 && a1 !== railA && a1 !== railB)
+    );
+  };
+
+  if (level.number === 6 || level.title?.startsWith("Level 6")) {
+    const directLamp = lamps.filter(lamp => between(lamp, supplyA, supplyB));
+    const remaining = lamps.filter(lamp => !directLamp.includes(lamp));
+    if (directLamp.length === 1 && remaining.length === 2 && seriesPairBetweenRails(remaining, supplyA, supplyB)) {
+      return { ok: true };
+    }
+    return { ok: false, reason: "Topology mismatch: one lamp must be directly across the battery, while the other two form a series pair across the same rails." };
+  }
+
+  if (level.title?.startsWith("Level 7")) {
+    if (resistors.length !== 1) return { ok: false, reason: "This level requires exactly one series resistor." };
+    const [rA, rB] = node(resistors[0]);
+    const orientations = [[rA, rB], [rB, rA]];
+    const valid = orientations.some(([sourceNode, branchNode]) =>
+      sourceNode === supplyA &&
+      lamps.every(lamp => between(lamp, branchNode, supplyB))
+    ) || orientations.some(([sourceNode, branchNode]) =>
+      sourceNode === supplyB &&
+      lamps.every(lamp => between(lamp, branchNode, supplyA))
+    );
+    if (valid) return { ok: true };
+    return { ok: false, reason: "Topology mismatch: the resistor must sit between one battery terminal and the shared rail of both parallel lamps." };
+  }
+
+  if (level.title?.startsWith("Level 8")) {
+    if (lamps.every(lamp => between(lamp, supplyA, supplyB))) return { ok: true };
+    return { ok: false, reason: "Topology mismatch: all three lamps must each connect directly across the same two battery rails." };
+  }
+
+  if (level.title?.startsWith("Level 9")) {
+    const elements = [...switches, ...lamps];
+    if (switches.length !== 1 || switches[0].closed === false) {
+      return { ok: false, reason: "Close the single switch; this level requires a closed series loop." };
+    }
+    const edges = elements.map(part => ({ part, ends: node(part) }));
+    const pathWalk = (current, target, used, visitedNodes) => {
+      if (current === target) return used.length === edges.length;
+      for (let i = 0; i < edges.length; i++) {
+        if (used.includes(i)) continue;
+        const [a, b] = edges[i].ends;
+        const next = a === current ? b : b === current ? a : null;
+        if (next === null || visitedNodes.has(next)) continue;
+        const nextUsed = [...used, i];
+        if (pathWalk(next, target, nextUsed, new Set([...visitedNodes, next]))) return true;
+      }
+      return false;
+    };
+    if (pathWalk(supplyA, supplyB, [], new Set([supplyA]))) return { ok: true };
+    return { ok: false, reason: "Topology mismatch: the closed switch and both lamps must form one series path between battery terminals." };
+  }
+
+  if (level.title?.startsWith("Level 10")) {
+    const candidates = lamps.filter(lamp => between(lamp, supplyA, supplyB));
+    if (candidates.length) return { ok: false, reason: "Topology mismatch: no single lamp should span the full battery rails. Build two branches with two lamps in series per branch." };
+    const allPaths = [];
+    const edges = lamps.map(part => ({ part, ends: node(part) }));
+    const walk = (current, target, used, visited) => {
+      if (current === target) {
+        if (used.length) allPaths.push(used);
+        return;
+      }
+      for (let i = 0; i < edges.length; i++) {
+        if (used.includes(i)) continue;
+        const [a, b] = edges[i].ends;
+        const next = a === current ? b : b === current ? a : null;
+        if (next === null || visited.has(next)) continue;
+        walk(next, target, [...used, i], new Set([...visited, next]));
+      }
+    };
+    walk(supplyA, supplyB, [], new Set([supplyA]));
+    const paths = allPaths.filter(path => path.length === 2);
+    if (paths.some((path, i) => paths.some((other, j) => j > i && path.length === 2 && other.length === 2 && path.every(index => !other.includes(index)))) {
+      return { ok: true };
+    }
+    return { ok: false, reason: "Topology mismatch: connect the four lamps as two independent two-lamp series paths across the battery." };
+  }
+
+  return { ok: false, reason: "No exact topology rule exists for this advanced level yet." };
 }
