@@ -1,6 +1,15 @@
 import { LEVELS } from "./config/levels.js";
 import { CircuitStore } from "./core/CircuitStore.js";
 import { CircuitValidator } from "./core/CircuitValidator.js";
+import {
+  createCircuitDocument,
+  validateCircuitDocument,
+  createChallengeCollection,
+  validateChallengeCollection,
+  readJsonFile,
+  downloadJson,
+  exportCircuitImage
+} from "./core/CircuitIO.js";
 import { BoardView } from "./ui/BoardView.js";
 import { Scene3D } from "./three/Scene3D.js";
 
@@ -12,6 +21,8 @@ const status = $("status");
 const sceneStatus = $("threeStatus");
 let score = 0;
 const awardedLevels = new Set();
+const customLevels = [];
+let nextCustomLevelId = Math.max(...Object.keys(LEVELS).map(Number)) + 1;
 
 function showStatus(message, isWarning = false) {
   status.textContent = message;
@@ -77,12 +88,30 @@ function setMode(mode) {
     : "Move mode: drag component bodies to arrange them.");
 }
 
-function loadLevel() {
-  store.clear();
+function refreshLevelOptions() {
+  const select = $("level");
+  const selected = select.value || "1";
+  select.querySelectorAll("option[data-custom='true']").forEach(option => option.remove());
+  for (const entry of customLevels) {
+    const option = document.createElement("option");
+    option.value = String(entry.id);
+    option.dataset.custom = "true";
+    option.textContent = entry.id + " · " + entry.level.title.replace(/^Level\\s+\\d+\\s*[—-]?\\s*/i, "");
+    select.appendChild(option);
+  }
+  if (LEVELS[Number(selected)]) select.value = selected;
+}
+
+function loadLevel({ clearBoard = true } = {}) {
+  if (clearBoard) store.clear();
   const levelNumber = Number($("level").value);
   const level = currentLevel();
+  if (!level) {
+    showStatus("That challenge could not be found.", true);
+    return;
+  }
   $("prompt").textContent = level.prompt;
-  $("info").textContent = "Required: " + Object.entries(level.parts).map(([type, count]) => type + " ×" + count).join(" · ") + "\n" + level.instructions;
+  $("info").textContent = "Required: " + Object.entries(level.parts).map(([type, count]) => type + " ×" + count).join(" · ") + "\\n" + level.instructions;
   $("info").style.whiteSpace = "pre-line";
   $("next").disabled = !awardedLevels.has(levelNumber);
   $("progress").textContent = "Level " + levelNumber + " of " + Object.keys(LEVELS).length;
@@ -90,6 +119,16 @@ function loadLevel() {
   showSimulation(null);
   setMode("select");
   showStatus("Level loaded. Add the required components.");
+}
+
+function addCustomLevels(levels) {
+  const newEntries = levels.map(level => ({ id: nextCustomLevelId++, level: { ...level, title: "Level " + (nextCustomLevelId - 1) + " — " + level.title.replace(/^Level\\s+\\d+\\s*[—-]?\\s*/i, "") } }));
+  for (const entry of newEntries) {
+    customLevels.push(entry);
+    LEVELS[entry.id] = entry.level;
+  }
+  refreshLevelOptions();
+  return newEntries.length;
 }
 
 document.querySelectorAll("[data-part]").forEach(button => {
@@ -151,13 +190,73 @@ $("next").addEventListener("click", () => {
     $("level").value = String(levelNumber + 1);
     loadLevel();
   } else {
-    showStatus("You completed all ten levels! Choose a level to practise again.");
+    showStatus("You completed all available levels! Choose a level to practise again.");
   }
 });
-$("level").addEventListener("change", loadLevel);
+$("level").addEventListener("change", () => loadLevel());
+
+$("exportCircuit").addEventListener("click", () => {
+  try {
+    const documentData = createCircuitDocument(store, Number($("level").value));
+    downloadJson(documentData, "circuit-challenge-level-" + $("level").value + ".json");
+    showStatus("Circuit JSON exported. Keep the file to reopen this editable design.");
+  } catch (error) {
+    showStatus("Export failed: " + error.message, true);
+  }
+});
+
+$("exportImage").addEventListener("click", async () => {
+  try {
+    await exportCircuitImage(board, store, "circuit-challenge.png");
+    showStatus("Circuit image exported as PNG.");
+  } catch (error) {
+    showStatus("Image export failed: " + error.message, true);
+  }
+});
+
+$("importCircuitButton").addEventListener("click", () => $("importCircuitFile").click());
+$("importCircuitFile").addEventListener("change", async event => {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  try {
+    const raw = await readJsonFile(file);
+    const circuit = validateCircuitDocument(raw);
+    store.replaceCircuit(circuit.parts, circuit.wires);
+    if (LEVELS[circuit.levelNumber]) $("level").value = String(circuit.levelNumber);
+    loadLevel({ clearBoard: false });
+    showStatus("Circuit imported and validated. The design is editable; submit it to check the answer.");
+  } catch (error) {
+    showStatus("Import rejected: " + error.message, true);
+  }
+});
+
+$("exportLevels").addEventListener("click", () => {
+  if (!customLevels.length) {
+    showStatus("No custom levels to export yet. Import a custom level collection first.", true);
+    return;
+  }
+  downloadJson(createChallengeCollection(customLevels.map(entry => entry.level)), "circuit-challenge-custom-levels.json");
+  showStatus("Exported " + customLevels.length + " custom challenge level(s).");
+});
+
+$("importLevelsButton").addEventListener("click", () => $("importLevelsFile").click());
+$("importLevelsFile").addEventListener("change", async event => {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  try {
+    const raw = await readJsonFile(file);
+    const levels = validateChallengeCollection(raw);
+    const count = addCustomLevels(levels);
+    showStatus("Imported " + count + " custom challenge level(s). They are now available in the Level menu.");
+  } catch (error) {
+    showStatus("Level import rejected: " + error.message, true);
+  }
+});
 
 const resizeObserver = new ResizeObserver(() => {
-  if (scene3D) scene3D.update(store, { width: board.clientWidth || 1, height: board.clientHeight || 1 });
+  if (scene3D) scene3D.update(store, { width: board.clientWidth || 1, height: board.clientHeight || 1 }, liveSimulation?.ok ? liveSimulation : null);
 });
 resizeObserver.observe(board);
 window.addEventListener("beforeunload", () => {
@@ -166,4 +265,5 @@ window.addEventListener("beforeunload", () => {
   scene3D?.destroy();
 });
 
+refreshLevelOptions();
 loadLevel();
