@@ -52,3 +52,15 @@ button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
 .part.lamp-on{border-color:#ffe08a;box-shadow:0 0 0 1px #ffe08a,0 0 18px #ffcc4a99,0 5px 14px #0005}
 .part.lamp-on .symbol{color:#fff0a5;text-shadow:0 0 8px #ffc83d,0 0 18px #ff9e22}
 .part.lamp-on .part-label{color:#fff0bd}
+
+
+.io-tools{margin-top:14px;padding-top:12px;border-top:1px solid #293f5b}
+.io-tools>strong{display:block;color:#b9d9f4}
+.custom-level-builder{margin:12px 0;padding:10px;border:1px solid #304d6e;border-radius:10px;background:#0b1728}
+.custom-level-builder summary{cursor:pointer;font-weight:700;color:#a9eaff}
+.custom-level-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.custom-level-grid label{display:flex;flex-direction:column;gap:5px;font-size:.85rem;color:#b9cbe3}
+.custom-level-grid .wide{grid-column:1/-1}
+.custom-level-grid input,.custom-level-grid textarea,.custom-level-grid select{width:100%;min-width:0}
+.custom-level-grid textarea{resize:vertical;font-family:ui-monospace,SFMono-Regular,monospace}
+@media(max-width:520px){.custom-level-grid{grid-template-columns:1fr}.custom-level-grid .wide{grid-column:auto}.io-tools .actions button{flex:1 1 100%}}
