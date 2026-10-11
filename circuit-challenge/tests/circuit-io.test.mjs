@@ -70,6 +70,36 @@ test("custom challenge collection round-trips supported level rules", () => {
   assert.deepEqual(validateChallengeCollection(collection), [level]);
 });
 
+test("custom challenges require a battery and topology-compatible components", () => {
+  const noBattery = {
+    format: "circuit-challenge-level-collection",
+    schemaVersion: 1,
+    levels: [{
+      title: "No battery",
+      prompt: "Try a circuit.",
+      instructions: "Add a source.",
+      parts: { Lamp: 2 },
+      points: 10,
+      topology: "parallel"
+    }]
+  };
+  assert.throws(() => validateChallengeCollection(noBattery), /exactly one battery/);
+
+  const noSwitch = {
+    format: "circuit-challenge-level-collection",
+    schemaVersion: 1,
+    levels: [{
+      title: "Missing switch",
+      prompt: "Control two lamps.",
+      instructions: "Use a switch.",
+      parts: { Battery: 1, Lamp: 2 },
+      points: 10,
+      topology: "parallel-switched"
+    }]
+  };
+  assert.throws(() => validateChallengeCollection(noSwitch), /one switch and at least two lamps/);
+});
+
 test("custom challenge collection rejects unsupported rules and excessive counts", () => {
   const base = {
     title: "Unsafe rule",
