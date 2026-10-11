@@ -11,7 +11,6 @@ import {
   exportCircuitImage
 } from "./core/CircuitIO.js";
 import { BoardView } from "./ui/BoardView.js";
-import { Scene3D } from "./three/Scene3D.js";
 
 const $ = id => document.getElementById(id);
 const store = new CircuitStore();
@@ -45,13 +44,26 @@ const boardView = new BoardView({
   onStatus: showStatus
 });
 
-let scene3D;
-try {
-  scene3D = new Scene3D($("threeView"));
-  sceneStatus.textContent = "3D models ready. Drag to rotate; scroll or pinch to zoom.";
-} catch (error) {
-  sceneStatus.textContent = "3D view could not start: " + error.message;
-}
+let scene3D = null;
+
+// Load the optional Three.js renderer asynchronously. A WebGL/CDN/import failure
+// must not prevent the independent 2D circuit editor and its buttons from starting.
+import("./three/Scene3D.js")
+  .then(({ Scene3D }) => {
+    try {
+      scene3D = new Scene3D($("threeView"));
+      scene3D.update(store, {
+        width: board.clientWidth || 1,
+        height: board.clientHeight || 1
+      }, liveSimulation?.ok ? liveSimulation : null);
+      sceneStatus.textContent = "3D models ready. Drag to rotate; scroll or pinch to zoom.";
+    } catch (error) {
+      sceneStatus.textContent = "3D view unavailable; the 2D editor still works. " + error.message;
+    }
+  })
+  .catch(error => {
+    sceneStatus.textContent = "3D view unavailable; the 2D editor still works. " + error.message;
+  });
 
 let liveSimulation = null;
 store.subscribe(() => {
