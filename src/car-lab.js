@@ -26,7 +26,7 @@ function trackTangent(x,y){
  const r=radii(), nx=(x-r.cx)/r.rx, ny=(y-r.cy)/r.ry;
  // Tangent direction for the ellipse at the car's approximate polar angle.
  const a=Math.atan2(ny,nx);
- return Math.atan2(-r.ry*Math.sin(a),-r.rx*Math.cos(a));
+ return Math.atan2(r.ry*Math.cos(a),-r.rx*Math.sin(a));
 }
 function rayDistance(angle,max=240){
  for(let d=4;d<=max;d+=4){if(!isOnTrack(state.x+Math.cos(angle)*d,state.y+Math.sin(angle)*d))return d;}
