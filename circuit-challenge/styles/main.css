@@ -38,3 +38,9 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .pill{display:inline-block;padding:3px 8px;border:1px solid #385674;border-radius:99px;color:#9fb4cf;font-size:.76rem}
 @media(max-width:800px){main{padding:16px 10px 32px}.layout{grid-template-columns:1fr}.panel{padding:12px}#board{height:430px;min-height:430px}#threeView{height:350px;min-height:300px}}
 @media(max-width:390px){.part{width:94px}.terminal{width:21px;height:21px}#board{height:460px;min-height:460px}}
+
+/* Primary action for submitting a completed answer. */
+button.primary{background:linear-gradient(135deg,#087ca5,#1765a5);border-color:#80eaff;font-weight:750;box-shadow:0 0 0 1px #80eaff22}
+button.primary:hover{background:linear-gradient(135deg,#0b91bd,#2078bd)}
+button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+#info{white-space:pre-line}
