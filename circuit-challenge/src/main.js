@@ -42,10 +42,27 @@ try {
   sceneStatus.textContent = "3D view could not start: " + error.message;
 }
 
+let liveSimulation = null;
 store.subscribe(() => {
   $("partReadout").textContent = "Components: " + store.parts.length;
   $("wireReadout").textContent = "Wires: " + store.wires.length;
-  if (scene3D) scene3D.update(store, { width: board.clientWidth || 1, height: board.clientHeight || 1 });
+  liveSimulation = validator.simulator.simulate(store.parts, store.wires);
+  if (liveSimulation.ok) {
+    for (const part of store.parts) {
+      const reading = liveSimulation.components[part.id];
+      part.current = reading?.current || 0;
+      part.voltage = reading?.voltage || 0;
+    }
+    showSimulation(liveSimulation);
+  } else {
+    for (const part of store.parts) {
+      part.current = 0;
+      part.voltage = 0;
+    }
+    showSimulation(null);
+  }
+  boardView.render();
+  if (scene3D) scene3D.update(store, { width: board.clientWidth || 1, height: board.clientHeight || 1 }, liveSimulation?.ok ? liveSimulation : null);
 });
 
 function currentLevel() {
@@ -103,9 +120,10 @@ $("clear").addEventListener("click", () => {
   showStatus("Workspace cleared.");
 });
 $("check").addEventListener("click", () => {
-  const result = validator.validate(store.parts, store.wires, currentLevel());
+  const result = validator.validate(store.parts, store.wires, { ...currentLevel(), number: Number($("level").value) });
   $("nodeReadout").textContent = result.ok ? "Network: valid" : "Network: incomplete";
   if (result.simulation) showSimulation(result.simulation);
+  else if (liveSimulation?.ok) showSimulation(liveSimulation);
   else showSimulation(null);
   if (!result.ok) {
     showStatus(result.reason, true);
