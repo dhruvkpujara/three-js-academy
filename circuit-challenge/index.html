@@ -29,6 +29,13 @@
     <section class="panel" aria-labelledby="componentsTitle"><strong id="componentsTitle">Components</strong>
       <div class="parts"><button data-part="Battery">＋ Battery</button><button data-part="Lamp">＋ Lamp</button><button data-part="Switch">＋ Switch</button><button data-part="Resistor">＋ Resistor</button><button data-part="Buzzer">＋ Buzzer</button><button data-part="Ammeter">＋ Ammeter</button><button data-part="Voltmeter">＋ Voltmeter</button></div>
       <div class="actions"><button id="selectMode">↖ Move parts</button><button id="wireMode">⌁ Wire mode</button><button id="undo">Undo wire</button><button id="clear">Clear board</button><button id="check" class="primary">Submit answer</button><button id="next" disabled>Next level →</button></div>
+      <div class="io-tools" aria-label="Circuit import and export">
+        <strong>Save, share &amp; reuse</strong>
+        <div class="actions"><button id="exportCircuit">Export circuit JSON</button><button id="exportImage">Export circuit image</button><button id="importCircuitButton">Import circuit JSON</button><button id="exportLevels">Export custom levels</button><button id="importLevelsButton">Import level collection</button></div>
+        <input id="importCircuitFile" type="file" accept=".json,application/json" hidden>
+        <input id="importLevelsFile" type="file" accept=".json,application/json" hidden>
+        <p class="small">Circuit files preserve components, positions, wires, switch states and selected level. Image export creates a PNG. Level collections contain custom challenge definitions and are validated before import.</p>
+      </div>
       <p class="status" id="status" aria-live="polite">Add components, then connect their terminals.</p>
     </section>
     <div class="layout">
