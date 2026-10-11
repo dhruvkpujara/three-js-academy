@@ -11,6 +11,7 @@ A standalone learning page in the Three.js Academy repository. Existing chapters
 - `src/core/CircuitStore.js` — observable circuit state and wire operations.
 - `src/core/CircuitValidator.js` — component-count, topology and simulation-result validation.
 - `src/core/ElectricalSimulator.js` — DC modified nodal analysis (MNA) for batteries and resistive components.
+- `src/core/CircuitIO.js` — versioned JSON formats, safe import validation, JSON downloads, and PNG circuit-image export.
 - `src/ui/BoardView.js` — 2D component placement, terminal input, and wire rendering.
 - `src/three/Scene3D.js` — Three.js scene lifecycle and synchronized 3D view.
 - `src/three/ComponentFactory.js` — reusable procedural component geometry.
@@ -29,6 +30,16 @@ A standalone learning page in the Three.js Academy repository. Existing chapters
 10. Two parallel branches, each containing two series lamps.
 
 Advanced levels use a 9 V battery, 20 Ω lamps, 100 Ω resistors, and a small 0.01 Ω model resistance for a closed switch. Each advanced level checks simulated equivalent resistance against a target tolerance.
+
+## Import, export, and custom challenges
+
+- **Export circuit JSON** saves the current level number, component IDs/types/positions, switch states, and terminal-to-terminal wires.
+- **Import circuit JSON** validates the schema, component types, ID uniqueness, coordinates, wire references, duplicate wires, and file size before replacing the current circuit.
+- **Export circuit image** creates a PNG snapshot of the 2D board with components, wire paths, switch labels, and lamp illumination state.
+- **Create a custom challenge level** lets you define a title, prompt, instructions, points, component counts, and one of the supported topology validators.
+- **Export custom levels** saves the custom levels created in this session as a versioned JSON collection; **Import level collection** validates the complete collection before adding its levels to the level menu.
+
+JSON files use `schemaVersion: 1`. Circuit files use format `circuit-challenge-circuit`; custom level collections use `circuit-challenge-level-collection`. Imports are limited to 2 MB, 100 components per circuit, 300 wires, and 100 levels per collection. Imported strings and component data are bounded and are rendered as text, not HTML. Custom levels support the exact validators `series`, `parallel`, and `parallel-switched`; simulation-based custom topologies are intentionally not accepted until they have a configurable exact-topology rule.
 
 ## Simulation model and limitations
 
