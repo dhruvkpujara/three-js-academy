@@ -13,16 +13,22 @@
 </head>
 <body>
   <main>
-    <header><h1>⚡ Circuit Challenge Lab</h1><p class="sub">Build your circuit in 2D, then inspect the matching component layout in 3D. Choose Wire mode and tap two terminals to connect them.</p></header>
+    <header><h1>⚡ Circuit Challenge Lab</h1><p class="sub">Build your circuit in 2D, inspect it in 3D, and test its electrical behavior. Choose Wire mode and tap two terminals to connect them.</p></header>
     <section class="panel" aria-labelledby="challengeTitle">
       <div class="top"><strong id="challengeTitle">Challenge</strong><label for="level">Level</label>
-        <select id="level"><option value="1">1 · Closed loop</option><option value="2">2 · Two lamps in series</option><option value="3">3 · Parallel lamps</option><option value="4">4 · Parallel + switch</option><option value="5">5 · Three parallel lamps</option></select>
-        <span class="score" id="score">Score: 0</span><span class="pill" id="progress">Level 1 of 5</span>
+        <select id="level">
+          <option value="1">1 · Closed loop</option><option value="2">2 · Two lamps in series</option>
+          <option value="3">3 · Parallel lamps</option><option value="4">4 · Parallel + switch</option>
+          <option value="5">5 · Three parallel lamps</option><option value="6">6 · Mixed circuit</option>
+          <option value="7">7 · Resistor + parallel lamps</option><option value="8">8 · Three-way parallel</option>
+          <option value="9">9 · Switched series loads</option><option value="10">10 · Circuit architect</option>
+        </select>
+        <span class="score" id="score">Score: 0</span><span class="pill" id="progress">Level 1 of 10</span>
       </div><p id="prompt">Connect a battery, a switch, and one lamp in a closed loop.</p><p class="small" id="info">Required components will be shown here.</p>
     </section>
     <section class="panel" aria-labelledby="componentsTitle"><strong id="componentsTitle">Components</strong>
       <div class="parts"><button data-part="Battery">＋ Battery</button><button data-part="Lamp">＋ Lamp</button><button data-part="Switch">＋ Switch</button><button data-part="Resistor">＋ Resistor</button><button data-part="Buzzer">＋ Buzzer</button><button data-part="Ammeter">＋ Ammeter</button><button data-part="Voltmeter">＋ Voltmeter</button></div>
-      <div class="actions"><button id="selectMode">↖ Move parts</button><button id="wireMode">⌁ Wire mode</button><button id="undo">Undo wire</button><button id="clear">Clear board</button><button id="check" class="primary">Submit answer</button><button id="next">Next level →</button></div>
+      <div class="actions"><button id="selectMode">↖ Move parts</button><button id="wireMode">⌁ Wire mode</button><button id="undo">Undo wire</button><button id="clear">Clear board</button><button id="check" class="primary">Submit answer</button><button id="next" disabled>Next level →</button></div>
       <p class="status" id="status" aria-live="polite">Add components, then connect their terminals.</p>
     </section>
     <div class="layout">
@@ -31,11 +37,14 @@
         <div class="legend"><span><i class="dot" style="background:#ff6577"></i>Terminals</span><span><i class="dot" style="background:#ffb34d"></i>Wires</span><span>Drag parts to arrange the circuit</span></div>
       </section>
       <section class="panel" aria-labelledby="previewTitle"><div class="top"><strong id="previewTitle">3D circuit view</strong><span class="pill">DRAG TO ROTATE · SCROLL TO ZOOM</span></div>
-        <p class="small">Procedural 3D batteries, bulbs, switches, resistors and meters. The 3D view follows the workspace.</p><div id="threeView" aria-label="Interactive 3D circuit model"></div><p class="small" id="threeStatus" aria-live="polite">Preparing 3D scene…</p>
+        <p class="small">Procedural 3D components. The 3D view follows the workspace.</p><div id="threeView" aria-label="Interactive 3D circuit model"></div><p class="small" id="threeStatus" aria-live="polite">Preparing 3D scene…</p>
       </section>
     </div>
-    <section class="panel" aria-labelledby="checksTitle"><strong id="checksTitle">Live circuit checks</strong><div class="meter"><span id="partReadout">Components: 0</span><span id="wireReadout">Wires: 0</span><span id="nodeReadout">Network: not checked</span></div>
-      <p class="small">This learning prototype checks component requirements and basic connectivity/topology. It does not calculate real voltage, current, resistance, or bulb brightness yet.</p>
+    <section class="panel" aria-labelledby="checksTitle"><strong id="checksTitle">Live circuit checks</strong><div class="meter">
+      <span id="partReadout">Components: 0</span><span id="wireReadout">Wires: 0</span><span id="nodeReadout">Network: not checked</span>
+      <span id="voltageReadout">Supply: — V</span><span id="currentReadout">Current: — A</span><span id="resistanceReadout">Equivalent R: — Ω</span>
+    </div>
+    <p class="small">Advanced levels use a DC circuit solver for resistive components and ideal batteries. Lamp resistance is modelled as 20 Ω, resistor as 100 Ω, and the default battery as 9 V. This is a simplified educational model; switch controls and nonlinear lamp behavior are not yet interactive.</p>
     </section>
     <footer><p class="small">Circuit Challenge · Three.js Academy · <a href="./README.md">Developer notes and project structure</a></p></footer>
   </main>
