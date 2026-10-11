@@ -237,7 +237,7 @@ $("createCustomLevel").addEventListener("click", () => {
     try {
       parts = JSON.parse($("customParts").value);
     } catch {
-      throw new Error("Required components must be valid JSON, for example {\\"Battery\\":1,\\"Lamp\\":2}.");
+      throw new Error("Required components must be valid JSON, for example: { Battery: 1, Lamp: 2 } with quoted JSON keys.");
     }
     const [level] = validateChallengeCollection({
       format: "circuit-challenge-level-collection",
