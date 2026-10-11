@@ -96,7 +96,7 @@ function refreshLevelOptions() {
     const option = document.createElement("option");
     option.value = String(entry.id);
     option.dataset.custom = "true";
-    option.textContent = entry.id + " · " + entry.level.title.replace(/^Level\\s+\\d+\\s*[—-]?\\s*/i, "");
+    option.textContent = entry.id + " · " + entry.level.title.replace(/^Level\s+\d+\s*[—-]?\s*/i, "");
     select.appendChild(option);
   }
   if (LEVELS[Number(selected)]) select.value = selected;
@@ -111,7 +111,7 @@ function loadLevel({ clearBoard = true } = {}) {
     return;
   }
   $("prompt").textContent = level.prompt;
-  $("info").textContent = "Required: " + Object.entries(level.parts).map(([type, count]) => type + " ×" + count).join(" · ") + "\\n" + level.instructions;
+  $("info").textContent = "Required: " + Object.entries(level.parts).map(([type, count]) => type + " ×" + count).join(" · ") + "\n" + level.instructions;
   $("info").style.whiteSpace = "pre-line";
   $("next").disabled = !awardedLevels.has(levelNumber);
   $("progress").textContent = "Level " + levelNumber + " of " + Object.keys(LEVELS).length;
@@ -122,7 +122,7 @@ function loadLevel({ clearBoard = true } = {}) {
 }
 
 function addCustomLevels(levels) {
-  const newEntries = levels.map(level => ({ id: nextCustomLevelId++, level: { ...level, title: "Level " + (nextCustomLevelId - 1) + " — " + level.title.replace(/^Level\\s+\\d+\\s*[—-]?\\s*/i, "") } }));
+  const newEntries = levels.map(level => ({ id: nextCustomLevelId++, level: { ...level, title: "Level " + (nextCustomLevelId - 1) + " — " + level.title.replace(/^Level\s+\d+\s*[—-]?\s*/i, "") } }));
   for (const entry of newEntries) {
     customLevels.push(entry);
     LEVELS[entry.id] = entry.level;
