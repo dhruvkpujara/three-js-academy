@@ -79,7 +79,8 @@ document.querySelectorAll("[data-part]").forEach(button => {
 $("selectMode").addEventListener("click", () => setMode("select"));
 $("wireMode").addEventListener("click", () => setMode("wire"));
 $("undo").addEventListener("click", () => {
-  showStatus(store.undoWire() ? "Last wire removed." : "There are no wires to undo.", store.wires.length === 0);
+  const removed = store.undoWire();
+  showStatus(removed ? "Last wire removed." : "There are no wires to undo.", !removed);
 });
 $("clear").addEventListener("click", () => {
   store.clear();
