@@ -231,6 +231,35 @@ $("importCircuitFile").addEventListener("change", async event => {
   }
 });
 
+$("createCustomLevel").addEventListener("click", () => {
+  try {
+    let parts;
+    try {
+      parts = JSON.parse($("customParts").value);
+    } catch {
+      throw new Error("Required components must be valid JSON, for example {\\"Battery\\":1,\\"Lamp\\":2}.");
+    }
+    const [level] = validateChallengeCollection({
+      format: "circuit-challenge-level-collection",
+      schemaVersion: 1,
+      levels: [{
+        title: $("customTitle").value,
+        prompt: $("customPrompt").value,
+        instructions: $("customInstructions").value,
+        parts,
+        points: Number($("customPoints").value),
+        topology: $("customTopology").value
+      }]
+    });
+    addCustomLevels([level]);
+    $("level").value = String(nextCustomLevelId - 1);
+    loadLevel();
+    showStatus("Custom challenge created. It is available in the Level menu and can be exported.");
+  } catch (error) {
+    showStatus("Custom level not created: " + error.message, true);
+  }
+});
+
 $("exportLevels").addEventListener("click", () => {
   if (!customLevels.length) {
     showStatus("No custom levels to export yet. Import a custom level collection first.", true);
