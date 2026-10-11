@@ -61,12 +61,14 @@ export class CircuitStore {
   clear() {
     this.parts = [];
     this.wires = [];
+    this.nextId = 1;
     this.notify();
   }
 
   replaceCircuit(parts, wires) {
-    this.parts = parts;
-    this.wires = wires;
+    this.parts = parts.map(part => ({ ...part }));
+    this.wires = wires.map(wire => ({ a: { ...wire.a }, b: { ...wire.b } }));
+    this.nextId = this.parts.reduce((max, part) => Math.max(max, part.id), 0) + 1;
     this.notify();
   }
 }
