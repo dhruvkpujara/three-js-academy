@@ -45,6 +45,7 @@ export class BoardView {
       }
       element.style.left = part.x + "px";
       element.style.top = part.y + "px";
+      this.syncPartState(element, part);
     }
     this.renderWires();
   }
@@ -57,9 +58,18 @@ export class BoardView {
       '<div class="part-label"></div><div class="symbol"></div>' +
       '<div class="terminals">' +
       '<button class="terminal" data-side="a" aria-label="Terminal A"></button>' +
-      '<button class="terminal" data-side="b" aria-label="Terminal B"></button></div>';
+      '<button class="terminal" data-side="b" aria-label="Terminal B"></button></div>' +
+      (part.type === "Switch" ? '<button class="switch-toggle" type="button"></button>' : '');
     element.querySelector(".part-label").textContent = part.type;
     element.querySelector(".symbol").textContent = COMPONENTS[part.type]?.symbol || "●";
+    this.syncPartState(element, part);
+    if (part.type === "Switch") {
+      element.querySelector(".switch-toggle").addEventListener("click", event => {
+        event.stopPropagation();
+        this.store.setPartProperty(part.id, "closed", part.closed === false);
+        this.onStatus(part.closed === false ? "Switch closed." : "Switch opened.");
+      });
+    }
 
     element.addEventListener("pointerdown", event => {
       if (event.target.closest(".terminal") || this.mode !== "select") return;
@@ -91,6 +101,20 @@ export class BoardView {
       });
     });
     return element;
+  }
+
+  syncPartState(element, part) {
+    element.classList.toggle("lamp-on", part.type === "Lamp" && (part.current || 0) > 0.005);
+    const toggle = element.querySelector(".switch-toggle");
+    if (toggle) {
+      toggle.textContent = part.closed === false ? "OPEN" : "CLOSED";
+      toggle.setAttribute("aria-label", part.closed === false ? "Close switch" : "Open switch");
+      toggle.classList.toggle("is-open", part.closed === false);
+    }
+    if (part.type === "Lamp") {
+      const reading = part.current ? " · " + part.current + " A" : "";
+      element.title = "Lamp" + reading;
+    }
   }
 
   handleTerminal(id, side, button) {
