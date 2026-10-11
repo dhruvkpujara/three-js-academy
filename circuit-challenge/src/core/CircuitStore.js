@@ -18,9 +18,17 @@ export class CircuitStore {
 
   addPart(type, x, y) {
     const part = { id: this.nextId++, type, x, y };
+    if (type === "Switch") part.closed = true;
     this.parts.push(part);
     this.notify();
     return part;
+  }
+
+  setPartProperty(id, property, value) {
+    const part = this.parts.find(item => item.id === id);
+    if (!part) return;
+    part[property] = value;
+    this.notify();
   }
 
   movePart(id, x, y) {
