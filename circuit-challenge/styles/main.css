@@ -44,3 +44,11 @@ button.primary{background:linear-gradient(135deg,#087ca5,#1765a5);border-color:#
 button.primary:hover{background:linear-gradient(135deg,#0b91bd,#2078bd)}
 button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
 #info{white-space:pre-line}
+
+
+/* Interactive switch state and simulated lamp illumination. */
+.switch-toggle{display:block;width:100%;margin-top:6px;padding:3px 6px;font-size:.68rem;font-weight:800;letter-spacing:.08em;background:#174d39;border-color:#56d7a0;color:#b8ffdc}
+.switch-toggle.is-open{background:#542936;border-color:#ff8191;color:#ffd3d9}
+.part.lamp-on{border-color:#ffe08a;box-shadow:0 0 0 1px #ffe08a,0 0 18px #ffcc4a99,0 5px 14px #0005}
+.part.lamp-on .symbol{color:#fff0a5;text-shadow:0 0 8px #ffc83d,0 0 18px #ff9e22}
+.part.lamp-on .part-label{color:#fff0bd}
