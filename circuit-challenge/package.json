@@ -1,0 +1,8 @@
+{
+  "name": "circuit-challenge-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --check src/main.js && node --check src/core/CircuitIO.js && node --check src/core/CircuitStore.js && node --test tests/*.test.mjs"
+  }
+}
