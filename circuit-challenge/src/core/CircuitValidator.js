@@ -1,8 +1,15 @@
+import { ElectricalSimulator } from "./ElectricalSimulator.js";
+
 /**
  * Validates submitted answers without depending on the DOM or Three.js.
- * Wires join terminal nodes; electrical components remain separate elements.
+ * Levels 1–5 use explicit topology rules; advanced levels also check simulated
+ * equivalent resistance from a DC modified-nodal-analysis solver.
  */
 export class CircuitValidator {
+  constructor() {
+    this.simulator = new ElectricalSimulator();
+  }
+
   validate(parts, wires, level) {
     const counts = countTypes(parts);
     const countsMatch = Object.entries(level.parts).every(([type, count]) => counts[type] === count)
@@ -23,27 +30,48 @@ export class CircuitValidator {
 
     if (level.topology === "series") return this.validateSeries(parts, wires, graph, battery);
     if (level.topology === "parallel-switched") return this.validateSwitchedParallel(parts, graph, battery);
-    return this.validateParallel(parts, graph, battery);
+    if (level.topology === "parallel") return this.validateParallel(parts, graph, battery);
+    if (level.topology === "simulation") return this.validateSimulation(parts, wires, level);
+    return { ok: false, reason: "This level has no validation rule configured yet." };
+  }
+
+  validateSimulation(parts, wires, level) {
+    const result = this.simulator.simulate(parts, wires);
+    if (!result.ok) return { ok: false, reason: result.error, simulation: result };
+    if (!Number.isFinite(result.equivalentResistance)) {
+      return { ok: false, reason: "No current is flowing. Check for an open path or a disconnected branch.", simulation: result };
+    }
+    const difference = Math.abs(result.equivalentResistance - level.targetResistance);
+    if (difference > level.tolerance) {
+      return {
+        ok: false,
+        reason: "Circuit runs, but equivalent resistance is " + result.equivalentResistance +
+          " Ω. Target: about " + level.targetResistance + " Ω. Recheck your series and parallel branches.",
+        simulation: result
+      };
+    }
+    return {
+      ok: true,
+      reason: "Correct! Equivalent resistance: " + result.equivalentResistance +
+        " Ω · supply current: " + result.totalCurrent + " A.",
+      simulation: result
+    };
   }
 
   validateSeries(parts, wires, graph, battery) {
     if (graph.find(battery.id + ":a") === graph.find(battery.id + ":b")) {
       return { ok: false, reason: "The battery terminals are shorted together. Build a loop through the components instead." };
     }
-
-    // In a simple series loop, each component has exactly one wire on each terminal.
     const terminalUse = countTerminalConnections(parts, wires);
     const everyTerminalUsedOnce = parts.every(part =>
       terminalUse.get(part.id + ":a") === 1 && terminalUse.get(part.id + ":b") === 1
     );
-
     if (!everyTerminalUsedOnce || wires.length !== parts.length) {
       return {
         ok: false,
         reason: "The series loop is incomplete or has a branch. Connect one wire to each terminal of every component, making one continuous loop."
       };
     }
-
     return { ok: true, reason: "Correct: every component is in one closed series loop." };
   }
 
@@ -53,14 +81,12 @@ export class CircuitValidator {
     if (batteryA === batteryB) {
       return { ok: false, reason: "The battery is shorted. Keep its positive and negative supply nodes separate." };
     }
-
     const lamps = parts.filter(part => part.type === "Lamp");
     const lampsShareTwoNodes = lamps.every(lamp => {
       const a = graph.find(lamp.id + ":a");
       const b = graph.find(lamp.id + ":b");
       return (a === batteryA && b === batteryB) || (a === batteryB && b === batteryA);
     });
-
     return lampsShareTwoNodes
       ? { ok: true, reason: "Correct: each lamp is connected across the same two battery nodes." }
       : { ok: false, reason: "Not parallel yet. Connect every lamp across the same two battery nodes, with separate branches." };
@@ -72,7 +98,6 @@ export class CircuitValidator {
     if (!switchPart || lamps.length < 2) {
       return { ok: false, reason: "This level needs one switch and at least two lamps." };
     }
-
     const batteryA = graph.find(battery.id + ":a");
     const batteryB = graph.find(battery.id + ":b");
     const switchA = graph.find(switchPart.id + ":a");
@@ -81,7 +106,6 @@ export class CircuitValidator {
       graph.find(lamp.id + ":a"),
       graph.find(lamp.id + ":b")
     ]);
-
     const firstRail = lampNodes[0][0];
     const secondRail = lampNodes[0][1];
     const lampsShareRails = firstRail !== secondRail && lampNodes.every(([a, b]) =>
@@ -92,7 +116,6 @@ export class CircuitValidator {
       (switchB === batteryA && switchA === firstRail && batteryB === secondRail) ||
       (switchA === batteryB && switchB === firstRail && batteryA === secondRail) ||
       (switchB === batteryB && switchA === firstRail && batteryA === secondRail);
-
     if (!lampsShareRails) {
       return { ok: false, reason: "Put each lamp on its own parallel branch between the same two rails." };
     }
@@ -144,9 +167,7 @@ function buildTerminalGraph(parts, wires) {
     const right = wire.b.id + ":" + wire.b.side;
     const rootLeft = find(left);
     const rootRight = find(right);
-    if (rootLeft !== null && rootRight !== null && rootLeft !== rootRight) {
-      parent.set(rootRight, rootLeft);
-    }
+    if (rootLeft !== null && rootRight !== null && rootLeft !== rootRight) parent.set(rootRight, rootLeft);
   }
   return { find };
 }
