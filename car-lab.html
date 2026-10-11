@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08111d">
+  <title>Self-Driving Car Lab — Three.js Academy</title>
+  <link rel="stylesheet" href="./car-lab.css">
+</head>
+<body>
+  <header class="topbar">
+    <div><div class="eyebrow">THREE.JS ACADEMY · AI EXPERIMENT</div><h1>Self-Driving Car Lab</h1><p>Drive manually, read sensors, and collect examples for your driving model.</p></div>
+    <nav aria-label="Academy navigation"><a href="./index.html">01 · First World</a><a href="./chapter-2.html">02 · Transforms</a><a href="./chapter-3.html">03 · Geometry</a><a class="active" href="./car-lab.html">04 · Car AI Lab</a></nav>
+  </header>
+  <main class="layout">
+    <section class="sim-panel">
+      <div class="panel-head"><div><span class="eyebrow">LIVE SIMULATION</span><h2>Track view</h2></div><span id="driveState" class="state">READY</span></div>
+      <div class="canvas-shell"><canvas id="trackCanvas" aria-label="Top-down racing track and car simulation"></canvas>
+        <div class="canvas-hint">W / ↑ accelerate · S / ↓ brake · A / ← steer left · D / → steer right</div>
+      </div>
+      <div class="actions"><button id="startBtn" class="primary">Start driving</button><button id="resetBtn">Reset car</button><button id="recordBtn">● Record example</button></div>
+      <div class="mobile-controls" aria-label="Touch driving controls">
+        <button data-control="left" aria-label="Steer left">←</button><button data-control="brake" aria-label="Brake">▼</button><button data-control="accelerate" aria-label="Accelerate">▲</button><button data-control="right" aria-label="Steer right">→</button>
+      </div>
+      <p class="note">Sensor rays are approximate track-edge distance measurements. Drive with the keyboard or touch controls, then record labeled examples.</p>
+    </section>
+    <aside class="side">
+      <section class="card"><div class="eyebrow">SENSORS · LIVE</div><h2>What the car sees</h2>
+        <div class="metric"><span>Forward distance</span><strong id="sensorForward">—</strong><small>front ray · px</small></div>
+        <div class="metric"><span>Left distance</span><strong id="sensorLeft">—</strong><small>left-front ray · px</small></div>
+        <div class="metric"><span>Right distance</span><strong id="sensorRight">—</strong><small>right-front ray · px</small></div>
+        <div class="metric"><span>Delta (Δ)</span><strong id="delta">—</strong><small>heading vs. track tangent · degrees</small></div>
+        <div class="metric"><span>Speed</span><strong id="speed">0.0</strong><small>simulation units</small></div>
+        <div class="metric"><span>Track status</span><strong id="trackStatus">ON TRACK</strong><small>boundary check</small></div>
+      </section>
+      <section class="card"><div class="eyebrow">TRAINING DATA</div><h2>Driving examples</h2><p class="muted">Each sample stores sensor inputs and the action you chose at that moment.</p>
+        <div class="dataset-count"><strong id="sampleCount">0</strong><span>recorded samples</span></div>
+        <div class="actions stack"><button id="exportBtn" class="primary">Export dataset JSON</button><button id="clearBtn">Clear dataset</button></div>
+        <p id="datasetMessage" class="status-message" role="status">No samples recorded yet.</p>
+      </section>
+      <section class="card"><div class="eyebrow">MODEL WORKFLOW</div><h2>Where Transformers.js fits</h2>
+        <ol class="steps"><li>Collect sensor readings and action labels here.</li><li>Train a small steering policy in a training environment suited to numeric data.</li><li>Export the trained model to ONNX, then use Transformers.js to run supported model inference in the browser.</li></ol>
+        <p class="note">Transformers.js is mainly for running models in the browser; it does not automatically train a new driving model from these samples. This lab exports clean JSON for the training step.</p>
+      </section>
+    </aside>
+  </main>
+  <script type="module" src="./src/car-lab.js"></script>
+</body>
+</html>
