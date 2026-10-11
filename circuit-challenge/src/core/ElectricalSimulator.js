@@ -1,9 +1,7 @@
 /**
- * DC simulator for ideal wires, resistive loads, switches, and ideal batteries.
- *
- * Uses modified nodal analysis (MNA). Component terminals are electrical nodes
- * joined by wires; components connect those nodes through resistance or voltage
- * sources. This is a learning model, not a SPICE replacement.
+ * DC simulator using modified nodal analysis (MNA).
+ * Wires merge electrical nodes; resistive components and batteries join nodes.
+ * This is a simplified educational DC model, not a SPICE replacement.
  */
 export class ElectricalSimulator {
   simulate(parts, wires, { batteryVoltage = 9 } = {}) {
@@ -38,9 +36,7 @@ export class ElectricalSimulator {
       const a = model.terminalNode.get(part.id + ":a");
       const b = model.terminalNode.get(part.id + ":b");
       if (a === b) {
-        if (part.type === "Battery") {
-          return { ok: false, error: "A battery is short-circuited. Separate its terminals." };
-        }
+        if (part.type === "Battery") return { ok: false, error: "A battery is short-circuited. Separate its terminals." };
         continue;
       }
       if (part.type === "Battery") {
@@ -52,47 +48,42 @@ export class ElectricalSimulator {
         rhs[k] = Number(part.voltage ?? batteryVoltage);
       } else {
         const resistance = resistanceFor(part);
-        if (resistance === Infinity) continue;
-        stampConductance(a, b, 1 / Math.max(resistance, 0.001));
+        stampConductance(a, b, 1 / resistance);
       }
     }
 
     const solution = solveLinearSystem(matrix, rhs);
     if (!solution) {
-      return { ok: false, error: "The circuit has no stable DC solution. Check for floating branches or conflicting ideal sources." };
+      return { ok: false, error: "The circuit has no stable DC solution. Check floating branches, shorts, or conflicting batteries." };
     }
 
     const voltageAt = node => node === reference ? 0 : solution[nodeIndex.get(node)];
-    const results = {};
-    let totalSourceCurrent = 0;
+    const readings = {};
     for (const part of components) {
       const a = model.terminalNode.get(part.id + ":a");
       const b = model.terminalNode.get(part.id + ":b");
-      const voltage = voltageAt(a) - voltageAt(b);
-      let current;
-      if (part.type === "Battery") {
-        current = solution[sourceIndex.get(part.id)];
-        totalSourceCurrent += Math.abs(current);
-      } else {
-        const resistance = resistanceFor(part);
-        current = resistance === Infinity ? 0 : voltage / Math.max(resistance, 0.001);
-      }
-      results[part.id] = {
+      const signedVoltage = voltageAt(a) - voltageAt(b);
+      const resistance = resistanceFor(part);
+      const current = part.type === "Battery"
+        ? solution[sourceIndex.get(part.id)]
+        : signedVoltage / resistance;
+      readings[part.id] = {
         type: part.type,
-        voltage: round(Math.abs(voltage), 3),
+        voltage: round(Math.abs(signedVoltage), 3),
         current: round(Math.abs(current), 4),
-        power: round(Math.abs(voltage * current), 4),
-        resistance: resistanceFor(part)
+        power: round(Math.abs(signedVoltage * current), 4),
+        resistance,
+        closed: part.type === "Switch" ? part.closed !== false : undefined
       };
     }
 
-    const batteries = sources;
-    const supplyVoltage = batteries.length ? Number(batteries[0].voltage ?? batteryVoltage) : batteryVoltage;
-    const sourceCurrent = batteries.length ? Math.abs(solution[sourceIndex.get(batteries[0].id)]) : 0;
+    const battery = sources[0];
+    const supplyVoltage = Number(battery.voltage ?? batteryVoltage);
+    const sourceCurrent = Math.abs(solution[sourceIndex.get(battery.id)]);
     return {
       ok: true,
       nodeVoltages: Object.fromEntries(nodes.map(node => [node, round(voltageAt(node), 3)])),
-      components: results,
+      components: readings,
       supplyVoltage: round(supplyVoltage, 3),
       totalCurrent: round(sourceCurrent, 4),
       equivalentResistance: sourceCurrent > 1e-9 ? round(supplyVoltage / sourceCurrent, 3) : Infinity,
@@ -102,14 +93,14 @@ export class ElectricalSimulator {
 }
 
 function resistanceFor(part) {
-  if (part.type === "Battery") return 0;
-  if (part.type === "Switch") return part.closed === false ? Infinity : 0.01;
+  if (part.type === "Battery") return 1e-9;
+  if (part.type === "Switch") return part.closed === false ? 1e9 : 0.01;
   if (part.type === "Lamp") return Number(part.resistance ?? 20);
   if (part.type === "Resistor") return Number(part.resistance ?? 100);
   if (part.type === "Buzzer") return Number(part.resistance ?? 40);
   if (part.type === "Ammeter") return 0.01;
   if (part.type === "Voltmeter") return 1e6;
-  return Infinity;
+  return 1e12;
 }
 
 function buildNetwork(parts, wires) {
@@ -137,9 +128,7 @@ function buildNetwork(parts, wires) {
   const terminalNode = new Map();
   for (const key of parent.keys()) terminalNode.set(key, find(key));
   const nodes = [...new Set(terminalNode.values())];
-  if (!parts.some(part => part.type === "Battery")) {
-    return { error: "Add at least one battery before running the simulation." };
-  }
+  if (!parts.some(part => part.type === "Battery")) return { error: "Add at least one battery before running the simulation." };
   return { nodes, terminalNode, components: parts };
 }
 
