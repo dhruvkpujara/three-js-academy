@@ -9,7 +9,6 @@
   <script type="importmap">
     {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
   </script>
-  <script type="module" src="./src/main.js"></script>
 </head>
 <body>
   <main>
@@ -67,5 +66,19 @@
     </section>
     <footer><p class="small">Circuit Challenge · Three.js Academy · <a href="./README.md">Developer notes and project structure</a></p></footer>
   </main>
+  <script>
+    // Import the application after the document exists and surface startup failures
+    // instead of leaving every control silently inactive.
+    import("./src/main.js?v=20261011-2").catch(error => {
+      console.error("Circuit Challenge startup failed:", error);
+      const status = document.getElementById("status");
+      if (status) {
+        status.textContent = "The editor could not start: " + (error && error.message ? error.message : String(error)) + ". Open Safari's JavaScript Console for details.";
+        status.classList.add("warn");
+      }
+      const buttons = document.querySelectorAll("[data-part], #level");
+      buttons.forEach(control => control.disabled = true);
+    });
+  </script>
 </body>
 </html>
