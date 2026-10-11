@@ -34,7 +34,19 @@
         <div class="actions"><button id="exportCircuit">Export circuit JSON</button><button id="exportImage">Export circuit image</button><button id="importCircuitButton">Import circuit JSON</button><button id="exportLevels">Export custom levels</button><button id="importLevelsButton">Import level collection</button></div>
         <input id="importCircuitFile" type="file" accept=".json,application/json" hidden>
         <input id="importLevelsFile" type="file" accept=".json,application/json" hidden>
-        <p class="small">Circuit files preserve components, positions, wires, switch states and selected level. Image export creates a PNG. Level collections contain custom challenge definitions and are validated before import.</p>
+        <details class="custom-level-builder">
+          <summary>Create a custom challenge level</summary>
+          <div class="custom-level-grid">
+            <label>Title<input id="customTitle" maxlength="100" placeholder="e.g. Two-lamp series loop"></label>
+            <label>Points<input id="customPoints" type="number" min="0" max="10000" value="25"></label>
+            <label>Validation rule<select id="customTopology"><option value="series">Closed series loop</option><option value="parallel">Parallel lamps</option><option value="parallel-switched">Switched parallel lamps</option></select></label>
+            <label>Required components (JSON)<textarea id="customParts" rows="2">{"Battery":1,"Lamp":2}</textarea></label>
+            <label class="wide">Challenge prompt<input id="customPrompt" maxlength="500" placeholder="What should the player build?"></label>
+            <label class="wide">Instructions<textarea id="customInstructions" rows="2" maxlength="2000" placeholder="Explain the wiring requirements"></textarea></label>
+          </div>
+          <button id="createCustomLevel" type="button" class="primary">Add custom level</button>
+        </details>
+        <p class="small">Circuit files preserve components, positions, wires, switch states and selected level. Image export creates a PNG. Custom levels can be authored above or imported as a validated JSON collection.</p>
       </div>
       <p class="status" id="status" aria-live="polite">Add components, then connect their terminals.</p>
     </section>
