@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --check src/main.js && node --check src/core/CircuitIO.js && node --check src/core/CircuitStore.js && node --test tests/*.test.mjs"
+    "test": "node --check src/main.js && node --check src/ui/BoardView.js && node --check src/core/CircuitIO.js && node --check src/core/CircuitStore.js && node --check src/core/CircuitValidator.js && node --check src/core/ElectricalSimulator.js && node --check src/three/Scene3D.js && node --check src/three/ComponentFactory.js && node --test tests/*.test.mjs"
   }
 }
