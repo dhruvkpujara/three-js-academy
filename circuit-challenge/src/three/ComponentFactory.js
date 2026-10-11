@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 /** Factory keeps component geometry/material choices out of scene management. */
 export class ComponentFactory {
-  create(type) {
+  create(type, reading = null, part = null) {
     const group = new THREE.Group();
     const metal = this.material("#c5d5e5", 0.25, 0.7);
     const blue = this.material("#347bb0", 0.35, 0.35);
@@ -14,22 +14,32 @@ export class ComponentFactory {
       this.cylinder(group, 0.12, 0.12, 0.12, this.material("#ed5264"), 0.4, 0.72, 0);
     } else if (type === "Lamp") {
       this.cylinder(group, 0.32, 0.28, 0.22, this.material("#9caec2"), 0, -0.05, 0);
-      const glass = new THREE.MeshPhysicalMaterial({ color: "#a8efff", roughness: 0.16, transparent: true, opacity: 0.58, transmission: 0.2 });
+      const current = Number(reading?.current || 0);
+      const lit = current > 0.005;
+      const glass = new THREE.MeshPhysicalMaterial({
+        color: lit ? "#fff0a0" : "#a8efff",
+        emissive: lit ? "#ffb51b" : "#000000",
+        emissiveIntensity: lit ? Math.min(2.8, 0.25 + current * 2) : 0,
+        roughness: 0.16,
+        transparent: true,
+        opacity: lit ? 0.94 : 0.58,
+        transmission: lit ? 0.05 : 0.2
+      });
       const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.37, 24, 16), glass);
       bulb.position.y = 0.32;
       group.add(bulb);
       const filament = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.025, 8, 20), this.material("#ffd77a"));
       filament.position.y = 0.3;
       group.add(filament);
-      const glow = new THREE.PointLight("#9beaff", 0.25, 2);
+      const glow = new THREE.PointLight(lit ? "#ffd15c" : "#9beaff", lit ? Math.min(4, 0.5 + current * 4) : 0.03, lit ? 4 : 0.5);
       glow.position.y = 0.3;
       group.add(glow);
     } else if (type === "Switch") {
       this.box(group, 1.35, 0.32, 0.65, blue, 0, 0, 0);
       this.cylinder(group, 0.11, 0.11, 0.12, metal, -0.36, 0.22, 0);
       this.cylinder(group, 0.11, 0.11, 0.12, metal, 0.36, 0.22, 0);
-      const lever = this.box(group, 0.72, 0.09, 0.12, this.material("#f5c56c"), 0, 0.38, 0);
-      lever.rotation.z = -0.28;
+      const lever = this.box(group, 0.72, 0.09, 0.12, this.material(part?.closed === false ? "#ed5264" : "#f5c56c"), 0, 0.38, 0);
+      lever.rotation.z = part?.closed === false ? 0.7 : -0.28;
     } else if (type === "Resistor") {
       this.cylinder(group, 0.18, 0.18, 0.8, this.material("#d7b58b"), 0, 0.1, 0);
       ["#8d5a40", "#e04c48", "#6d63bb", "#a56d3b"].forEach((color, index) => {
