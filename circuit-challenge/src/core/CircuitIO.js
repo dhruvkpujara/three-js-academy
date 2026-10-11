@@ -5,7 +5,7 @@
  */
 const SCHEMA_VERSION = 1;
 const COMPONENT_TYPES = new Set(["Battery", "Lamp", "Switch", "Resistor", "Buzzer", "Ammeter", "Voltmeter"]);
-const TOPOLOGIES = new Set(["series", "parallel", "parallel-switched", "simulation"]);
+const TOPOLOGIES = new Set(["series", "parallel", "parallel-switched"]);
 const MAX_PARTS = 100;
 const MAX_WIRES = 300;
 const MAX_LEVELS = 100;
