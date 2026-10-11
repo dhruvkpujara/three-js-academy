@@ -313,7 +313,7 @@ function verifyAdvancedTopology(parts, wires, level) {
     };
     walk(supplyA, supplyB, [], new Set([supplyA]));
     const paths = allPaths.filter(path => path.length === 2);
-    if (paths.some((path, i) => paths.some((other, j) => j > i && path.length === 2 && other.length === 2 && path.every(index => !other.includes(index)))) {
+    if (paths.some((path, i) => paths.some((other, j) => j > i && path.length === 2 && other.length === 2 && path.every(index => !other.includes(index))))) {
       return { ok: true };
     }
     return { ok: false, reason: "Topology mismatch: connect the four lamps as two independent two-lamp series paths across the battery." };
