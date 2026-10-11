@@ -1,4 +1,4 @@
-import { LEVELS, COMPONENTS } from "./config/levels.js";
+import { LEVELS } from "./config/levels.js";
 import { CircuitStore } from "./core/CircuitStore.js";
 import { CircuitValidator } from "./core/CircuitValidator.js";
 import { BoardView } from "./ui/BoardView.js";
@@ -12,7 +12,6 @@ const status = $("status");
 const sceneStatus = $("threeStatus");
 let score = 0;
 const awardedLevels = new Set();
-let currentMode = "select";
 
 function showStatus(message, isWarning = false) {
   status.textContent = message;
@@ -45,7 +44,6 @@ function currentLevel() {
 }
 
 function setMode(mode) {
-  currentMode = mode;
   boardView.setMode(mode);
   $("modeLabel").textContent = mode === "wire" ? "WIRE MODE" : "MOVE MODE";
   showStatus(mode === "wire"
