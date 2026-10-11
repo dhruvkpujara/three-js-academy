@@ -18,6 +18,15 @@ function showStatus(message, isWarning = false) {
   status.classList.toggle("warn", isWarning);
 }
 
+function showSimulation(simulation) {
+  $("voltageReadout").textContent = simulation?.ok ? "Supply: " + simulation.supplyVoltage + " V" : "Supply: — V";
+  $("currentReadout").textContent = simulation?.ok ? "Current: " + simulation.totalCurrent + " A" : "Current: — A";
+  const resistance = simulation?.ok && Number.isFinite(simulation.equivalentResistance)
+    ? simulation.equivalentResistance + " Ω"
+    : "— Ω";
+  $("resistanceReadout").textContent = "Equivalent R: " + resistance;
+}
+
 const boardView = new BoardView({
   board,
   svg: $("wires"),
@@ -53,12 +62,15 @@ function setMode(mode) {
 
 function loadLevel() {
   store.clear();
-  $("prompt").textContent = currentLevel().prompt;
-  $("info").textContent = "Required: " + Object.entries(currentLevel().parts).map(([type, count]) => type + " ×" + count).join(" · ") + "\n" + currentLevel().instructions;
+  const levelNumber = Number($("level").value);
+  const level = currentLevel();
+  $("prompt").textContent = level.prompt;
+  $("info").textContent = "Required: " + Object.entries(level.parts).map(([type, count]) => type + " ×" + count).join(" · ") + "\n" + level.instructions;
   $("info").style.whiteSpace = "pre-line";
-  $("next").disabled = !awardedLevels.has(Number($("level").value));
-  $("progress").textContent = "Level " + $("level").value + " of " + Object.keys(LEVELS).length;
+  $("next").disabled = !awardedLevels.has(levelNumber);
+  $("progress").textContent = "Level " + levelNumber + " of " + Object.keys(LEVELS).length;
   $("nodeReadout").textContent = "Network: not checked";
+  showSimulation(null);
   setMode("select");
   showStatus("Level loaded. Add the required components.");
 }
@@ -87,11 +99,14 @@ $("undo").addEventListener("click", () => {
 $("clear").addEventListener("click", () => {
   store.clear();
   $("nodeReadout").textContent = "Network: not checked";
+  showSimulation(null);
   showStatus("Workspace cleared.");
 });
 $("check").addEventListener("click", () => {
   const result = validator.validate(store.parts, store.wires, currentLevel());
   $("nodeReadout").textContent = result.ok ? "Network: valid" : "Network: incomplete";
+  if (result.simulation) showSimulation(result.simulation);
+  else showSimulation(null);
   if (!result.ok) {
     showStatus(result.reason, true);
     return;
@@ -101,20 +116,24 @@ $("check").addEventListener("click", () => {
     score += currentLevel().points;
     awardedLevels.add(levelNumber);
     $("score").textContent = "Score: " + score;
-    showStatus("Correct! Level " + levelNumber + " passed — +" + currentLevel().points + " points.");
+    showStatus("Correct! Level " + levelNumber + " passed — +" + currentLevel().points + " points. " + result.reason);
     $("next").disabled = false;
   } else {
-    showStatus("Correct circuit! Points for this level were already awarded.");
+    showStatus("Correct circuit! Points for this level were already awarded. " + result.reason);
     $("next").disabled = false;
   }
 });
 $("next").addEventListener("click", () => {
   const levelNumber = Number($("level").value);
+  if (!awardedLevels.has(levelNumber)) {
+    showStatus("Submit a correct answer before moving to the next level.", true);
+    return;
+  }
   if (levelNumber < Object.keys(LEVELS).length) {
     $("level").value = String(levelNumber + 1);
     loadLevel();
   } else {
-    showStatus("You completed all five levels! Choose a level to practise again.");
+    showStatus("You completed all ten levels! Choose a level to practise again.");
   }
 });
 $("level").addEventListener("change", loadLevel);
