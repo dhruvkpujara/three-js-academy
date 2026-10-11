@@ -66,8 +66,9 @@ export class BoardView {
     if (part.type === "Switch") {
       element.querySelector(".switch-toggle").addEventListener("click", event => {
         event.stopPropagation();
-        this.store.setPartProperty(part.id, "closed", part.closed === false);
-        this.onStatus(part.closed === false ? "Switch closed." : "Switch opened.");
+        const nextClosed = part.closed === false;
+        this.store.setPartProperty(part.id, "closed", nextClosed);
+        this.onStatus(nextClosed ? "Switch closed." : "Switch opened.");
       });
     }
 
