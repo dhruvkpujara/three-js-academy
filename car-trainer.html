@@ -93,7 +93,7 @@ $('export').onclick=()=>{const data={schema:'racing-ai-neural-dataset/v2',units:
 $('clear').onclick=()=>{s.samples=[];s.model=null;s.ai=false;s.recordingLap=false;s.lapProgress=0;s.lapCount=0;$('loss').textContent='—';$('lapProgress').textContent='Lap recorder: idle · 0% complete';$('lapRecord').textContent='⏺ Record whole lap';$('trainMessage').textContent='Samples cleared. Record a lap to train again.';$('trainMessage').className='status';update()};
 window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys.add(k);if(k===' '&&!e.repeat){s.running=!s.running;update()}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>{keys.clear();Object.keys(touch).forEach(k=>touch[k]=false);document.querySelectorAll('[data-key]').forEach(b=>b.classList.remove('active'))});
 document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;const down=e=>{e.preventDefault();touch[k]=true;b.classList.add('active')},up=e=>{e.preventDefault();touch[k]=false;b.classList.remove('active')};b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up)});
-window.addEventListener('resize',resize);resize();buildTrack(3);$("trackName").textContent="Track 1 · "+trackName;reset(false);requestAnimationFrame(frame);
+buildTrack(3);window.addEventListener('resize',resize);resize();$("trackName").textContent="Track 1 · "+trackName;reset(false);requestAnimationFrame(frame);
 })();
 </script>
 </body></html>
