@@ -14,12 +14,12 @@ main{max-width:1600px;margin:auto;padding:18px clamp(10px,2.5vw,32px);display:gr
 </style>
 </head>
 <body>
-<header><div><div class="eyebrow">THREE.JS ACADEMY · AUTONOMOUS DRIVING PLAYGROUND</div><h1>Racing AI Trainer</h1><p>Drive the circuit, inspect the car’s sensors, collect examples, then train a tiny in-browser steering policy.</p></div><a class="toplink" href="./car-lab.html">← Original Car Lab</a></header>
+<header><div><div class="eyebrow">THREE.JS ACADEMY · AUTONOMOUS DRIVING PLAYGROUND</div><h1>Racing AI Trainer</h1><p>Generate randomized oval circuits, record a lap, then test your trained driving policy across layouts.</p></div><a class="toplink" href="./car-lab.html">← Original Car Lab</a></header>
 <main>
 <section class="panel">
- <div class="panel-head"><div><div class="eyebrow">LIVE SIMULATION</div><h2>Race circuit</h2></div><span id="driveState" class="pill">READY</span></div>
+ <div class="panel-head"><div><div class="eyebrow">LIVE SIMULATION</div><h2>Race circuit</h2><p id="trackName" class="tiny">Track 1 · Classic oval</p></div><span id="driveState" class="pill">READY</span></div>
  <div class="canvasbox"><canvas id="track" aria-label="Top-down racing car and oval circuit"></canvas><div class="hint">W / ↑ accelerate · S / ↓ brake · A / ← left · D / → right</div></div>
- <div class="actions"><button id="start" class="primary">Start driving</button><button id="reset">Reset car</button><button id="record">● Record example</button><button id="lapRecord" class="primary">⏺ Record whole lap</button></div>
+ <div class="actions"><button id="start" class="primary">Start driving</button><button id="reset">Reset car</button><button id="newTrack">🎲 Generate random track</button><button id="record">● Record example</button><button id="lapRecord" class="primary">⏺ Record whole lap</button></div>
  <div class="keyboard" aria-label="Touch controls"><button data-key="left">←</button><button data-key="brake">▼ Brake</button><button data-key="accelerate">▲ Gas</button><button data-key="right">→</button></div>
  <div id="message" class="status">Drive manually, or start a full-lap recording to capture your steering and throttle continuously.</div><div class="status" id="lapProgress">Lap recorder: idle · 0% complete</div>
 </section>
@@ -45,7 +45,7 @@ main{max-width:1600px;margin:auto;padding:18px clamp(10px,2.5vw,32px);display:gr
  <div class="actions trainrow"><button id="train" class="primary">Train model</button><button id="ai" class="ai">Enable AI drive</button></div>
  <div class="actions trainrow"><button id="export">Export JSON</button><button id="clear">Clear samples</button></div>
  <div id="trainMessage" class="status">Record a complete lap with varied steering and throttle, then train the neural network.</div>
- <p class="tiny">This page trains a small neural network (6 inputs → 8 hidden neurons → 2 outputs) directly in your browser using backpropagation. A single lap is a starting dataset; repeat laps for better results.</p>
+ <p class="tiny">This page trains a small neural network (6 inputs → 8 hidden neurons → 2 outputs) in-browser using backpropagation. The geometry-aware autopilot adapts to randomized oval layouts; one lap teaches the network your driving style, but cannot guarantee perfect learning of every unseen track.</p>
  </section>
 </aside>
 </main>
@@ -56,9 +56,10 @@ const canvas=document.querySelector('#track'),ctx=canvas.getContext('2d'),$=id=>
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const s={x:0,y:0,angle:0,speed:0,steer:0,distance:0,running:false,last:0,samples:[],model:null,ai:false,turn:0,recordingLap:false,lapProgress:0,lastPhase:null,lastRecordAt:0,lapCount:0};
 const keys=new Set(),touch={left:false,right:false,accelerate:false,brake:false};let W=900,H=690,dpr=1;
-const tr={cx:.5,cy:.51,rx:.36,ry:.405,irx:.235,iry:.265};
+const tr={cx:.5,cy:.51,rx:.36,ry:.405,irx:.235,iry:.265};let trackNumber=1;const trackProfiles=[{name:"Classic oval",rx:.36,ry:.405},{name:"Wide speedway",rx:.405,ry:.33},{name:"Tall circuit",rx:.31,ry:.425},{name:"Compact loop",rx:.32,ry:.34},{name:"Long sweeping oval",rx:.40,ry:.39},{name:"Near-circular loop",rx:.34,ry:.34}];
 function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=Math.max(300,r.width);H=W/1.3;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(!s.x)reset(false);draw()}
 function radii(){return {cx:W*tr.cx,cy:H*tr.cy,rx:W*tr.rx,ry:H*tr.ry,irx:W*tr.irx,iry:H*tr.iry}}
+function generateTrack(){const profile=trackProfiles[Math.floor(Math.random()*trackProfiles.length)];const jitter=()=>.94+Math.random()*.12;tr.cx=.5;tr.cy=.51;tr.rx=clamp(profile.rx*jitter(),.29,.405);tr.ry=clamp(profile.ry*jitter(),.30,.425);const lane=.63+Math.random()*.06;tr.irx=tr.rx*lane;tr.iry=tr.ry*lane;trackNumber++;s.x=0;s.y=0;s.speed=0;s.steer=0;s.distance=0;s.running=false;s.ai=false;s.recordingLap=false;s.lapProgress=0;s.lastPhase=null;$("start").textContent="Start driving";$("ai").textContent="Enable AI drive";$("lapRecord").textContent="⏺ Record whole lap";$("lapRecord").classList.remove("ai");$("trackName").textContent="Track "+trackNumber+" · "+profile.name;$("lapProgress").textContent="Lap recorder: idle · 0% complete";$("message").textContent="New randomized oval generated. Your training samples and trained network are preserved; reset the car to start on this circuit.";$("driveState").textContent="NEW TRACK";reset(false);draw();update()}
 function onTrack(x,y){const r=radii(),o=((x-r.cx)/r.rx)**2+((y-r.cy)/r.ry)**2,i=((x-r.cx)/r.irx)**2+((y-r.cy)/r.iry)**2;return o<=1&&i>=1}
 function tangent(x,y){const r=radii(),a=Math.atan2((y-r.cy)/r.ry,(x-r.cx)/r.rx);return Math.atan2(r.ry*Math.cos(a),-r.rx*Math.sin(a))}
 function ray(a,max=260){for(let d=3;d<=max;d+=3)if(!onTrack(s.x+Math.cos(a)*d,s.y+Math.sin(a)*d))return d;return max}
@@ -84,7 +85,7 @@ function train(){if(s.samples.length<20){$('trainMessage').textContent='Need at 
 function frame(t){requestAnimationFrame(frame);const dt=s.last?Math.min((t-s.last)/1000,.04):0;s.last=t;if((s.running||s.ai)&&dt>0){const v=sensors(),human=action();let steer=s.ai?aiSteering(v):human.steering;let throttle=human.throttle;if(s.ai){const learned=predict(v);const err=Number($('targetSpeed').value)-s.speed;throttle=learned&&Math.abs(learned.throttle)>.12?learned.throttle:(err>4?1:err< -4?-1:0)}
 s.steer+=(steer-s.steer)*Math.min(1,dt*8);if(throttle>0)s.speed+=dt*65;else if(throttle<0)s.speed-=dt*110;else s.speed-=dt*16;s.speed=clamp(s.speed,0,Number($('targetSpeed').value)+20);const turnRate=(.45+s.speed/125);s.angle+=s.steer*dt*turnRate;s.x+=Math.cos(s.angle)*s.speed*dt;s.y+=Math.sin(s.angle)*s.speed*dt;if(onTrack(s.x,s.y))s.distance+=s.speed*dt;else{s.speed*=.94;if(s.speed<7){s.running=false;s.ai=false;$('ai').textContent='Enable AI drive';$('message').textContent='Off track. Reset the car and enable AI drive again.';$('message').className='status warn'}}}
 if(s.recordingLap&&s.running)lapTick(t);draw();update()}
-$('start').onclick=()=>{s.ai=false;s.running=!s.running;$('start').textContent=s.running?'Pause driving':'Resume driving';$('ai').textContent='Enable AI drive';update()};$('reset').onclick=()=>reset();$('record').onclick=record;$('lapRecord').onclick=toggleLapRecording;$('train').onclick=train;
+$('start').onclick=()=>{s.ai=false;s.running=!s.running;$('start').textContent=s.running?'Pause driving':'Resume driving';$('ai').textContent='Enable AI drive';update()};$('reset').onclick=()=>reset();$('newTrack').onclick=generateTrack;$('record').onclick=record;$('lapRecord').onclick=toggleLapRecording;$('train').onclick=train;
 $('ai').onclick=()=>{s.ai=!s.ai;s.running=false;$('ai').textContent=s.ai?'Disable AI drive':'Enable AI drive';$('start').textContent='Start driving';$('message').textContent=s.ai?(s.model?'AI drive enabled: track-following controller is assisted by your trained examples.':'AI drive enabled: track-following autopilot is active. Train a model to add learned steering.'):'AI drive paused.';update()};
 $('targetSpeed').oninput=update;$('turnStrength').oninput=update;
 $('export').onclick=()=>{const data={schema:'racing-ai-neural-dataset/v2',units:{distances:'pixels',speed:'simulation units',delta:'degrees'},inputs:['forward','left','right','delta','speed','target_speed'],labels:['steering','throttle'],completed_laps:s.lapCount,sample_count:s.samples.length,samples:s.samples,model:s.model};const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='racing-ai-training-data.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);$('trainMessage').textContent='Exported '+s.samples.length+' samples to JSON.'};
