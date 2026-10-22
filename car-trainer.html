@@ -85,8 +85,9 @@ const count=720,cx=W*.5,cy=H*.5,rx=W*shape.rx,ry=H*shape.ry;
 for(let i=0;i<count;i++){
  const t=i/count*Math.PI*2;
  const modulation=1+shape.a*Math.cos(3*t+shape.phase)+shape.b*Math.sin(5*t-shape.phase);
- const secondary=1+shape.a*.32*Math.sin(2*t+shape.phase);
- trackPoints.push({x:cx+rx*Math.cos(t)*modulation,y:cy+ry*Math.sin(t)*secondary});
+ /* Apply the same positive radial scale to both axes. Independent x/y
+    modulation can fold the path back across itself and create islands. */
+ trackPoints.push({x:cx+rx*Math.cos(t)*modulation,y:cy+ry*Math.sin(t)*modulation});
 }
 }function nearestTrack(x,y,referenceIndex=null){let best=Infinity,index=0,bestX=trackPoints[0]?.x??x,bestY=trackPoints[0]?.y??y;const n=trackPoints.length;let candidates;if(Number.isFinite(referenceIndex)&&n){const center=((Math.floor(referenceIndex)%n)+n)%n,windowSize=36;candidates=[];for(let offset=-windowSize;offset<=windowSize;offset++)candidates.push((center+offset+n)%n)}else candidates=Array.from({length:n},(_,i)=>i);for(const i of candidates){const a=trackPoints[i],b=trackPoints[(i+1)%n],dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy,t=l?clamp(((x-a.x)*dx+(y-a.y)*dy)/l,0,1):0,px=a.x+t*dx,py=a.y+t*dy,d=(x-px)**2+(y-py)**2;if(d<best){best=d;index=i+t;bestX=px;bestY=py}}return {distance:Math.sqrt(best),index,x:bestX,y:bestY}}
 function generateTrack(kind=null){let profile;if(Number.isInteger(kind)){profile=trackProfiles.find(p=>p.kind===kind)||trackProfiles[0]}else{const choices=trackProfiles.filter(p=>p.kind!==currentTrackKind);profile=choices[Math.floor(Math.random()*choices.length)]}buildTrack(profile.kind);trackNumber++;s.x=0;s.y=0;s.speed=0;s.steer=0;s.distance=0;s.running=false;s.ai=false;s.recordingLap=false;s.lapProgress=0;s.lastPhase=null;$("trackSelect").value=String(profile.kind);$("start").textContent="Start driving";$("ai").textContent="Enable AI drive";$("lapRecord").textContent="⏺ Record whole lap";$("lapRecord").classList.remove("ai");$("trackName").textContent="Track "+trackNumber+" · "+trackName;$("lapProgress").textContent="Lap recorder: idle · 0% complete";$("message").textContent="Circuit loaded: "+trackName+". Training samples and model preserved. Reset or start driving when ready."; $("driveState").textContent="NEW TRACK";reset(false);draw();update()}
