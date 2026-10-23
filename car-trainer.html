@@ -77,19 +77,20 @@ trackPoints=[];
    Tight radial oscillations made the thick road edges pinch into false
    crossings even when the centerline itself was technically closed. */
 const shape=[
-{rx:.365,ry:.355,a:.035,b:.012,k:2,phase:.2},  /* Fiorano: broad oval */
-{rx:.385,ry:.315,a:.070,b:.010,k:3,phase:1.1}, /* Monza: three long arcs */
-{rx:.355,ry:.375,a:.050,b:.012,k:2,phase:2.0}, /* Mugello: flowing oval */
-{rx:.345,ry:.365,a:.075,b:.008,k:4,phase:.7},  /* Technical: four broad bends */
-{rx:.375,ry:.340,a:.060,b:.010,k:3,phase:2.6}, /* Marina: street-style lobes */
-{rx:.370,ry:.365,a:.045,b:.018,k:5,phase:1.7}  /* Endurance: multi-corner */
+{rx:.360,ry:.350,a:.070,b:.022,c:.012,k:3,phase:.2},  /* Fiorano: linked technical bends */
+{rx:.385,ry:.310,a:.085,b:.018,c:.010,k:4,phase:1.1}, /* Monza: fast arcs and chicanes */
+{rx:.350,ry:.370,a:.075,b:.024,c:.012,k:3,phase:2.0}, /* Mugello: flowing multi-apex bends */
+{rx:.340,ry:.355,a:.095,b:.018,c:.008,k:5,phase:.7}, /* Technical GP: complex corner sequence */
+{rx:.365,ry:.335,a:.080,b:.022,c:.012,k:4,phase:2.6},/* Marina: tighter street-style corners */
+{rx:.365,ry:.360,a:.075,b:.025,c:.014,k:6,phase:1.7} /* Endurance: many alternating bends */
 ][currentTrackKind];
-const count=720,cx=W*.5,cy=H*.5,rx=W*shape.rx,ry=H*shape.ry;
+const count=900,cx=W*.5,cy=H*.5,rx=W*shape.rx,ry=H*shape.ry;
 for(let i=0;i<count;i++){
  const t=i/count*Math.PI*2;
- /* Positive radial modulation keeps each centerline a single closed loop;
-    distinct low-frequency profiles make each selection visibly different. */
- const modulation=1+shape.a*Math.cos(shape.k*t+shape.phase)+shape.b*Math.sin(2*t-shape.phase);
+ /* Multiple bounded harmonics add corners without using arbitrary splines.
+    Since radius stays positive and angle advances monotonically, the
+    centerline remains a single closed polar loop rather than crossing itself. */
+ const modulation=1+shape.a*Math.cos(shape.k*t+shape.phase)+shape.b*Math.sin((shape.k+2)*t-shape.phase)+shape.c*Math.cos(2*t+shape.phase*.5);
  trackPoints.push({x:cx+rx*Math.cos(t)*modulation,y:cy+ry*Math.sin(t)*modulation});
 }
 }function nearestTrack(x,y,referenceIndex=null){let best=Infinity,index=0,bestX=trackPoints[0]?.x??x,bestY=trackPoints[0]?.y??y;const n=trackPoints.length;let candidates;if(Number.isFinite(referenceIndex)&&n){const center=((Math.floor(referenceIndex)%n)+n)%n,windowSize=36;candidates=[];for(let offset=-windowSize;offset<=windowSize;offset++)candidates.push((center+offset+n)%n)}else candidates=Array.from({length:n},(_,i)=>i);for(const i of candidates){const a=trackPoints[i],b=trackPoints[(i+1)%n],dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy,t=l?clamp(((x-a.x)*dx+(y-a.y)*dy)/l,0,1):0,px=a.x+t*dx,py=a.y+t*dy,d=(x-px)**2+(y-py)**2;if(d<best){best=d;index=i+t;bestX=px;bestY=py}}return {distance:Math.sqrt(best),index,x:bestX,y:bestY}}
